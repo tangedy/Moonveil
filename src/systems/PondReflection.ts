@@ -1,0 +1,27 @@
+import type { Point } from './InteractionSystem';
+
+export interface Ellipse {
+  centerX: number;
+  centerY: number;
+  radiusX: number;
+  radiusY: number;
+}
+
+export function projectInsideEllipse(point: Point, ellipse: Ellipse, inset = 0.72): Point {
+  const dx = point.x - ellipse.centerX;
+  const dy = point.y - ellipse.centerY;
+  if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) {
+    return { x: ellipse.centerX, y: ellipse.centerY };
+  }
+
+  const denominator = Math.sqrt(
+    (dx * dx) / (ellipse.radiusX * ellipse.radiusX) +
+    (dy * dy) / (ellipse.radiusY * ellipse.radiusY),
+  );
+  const boundaryScale = denominator > 0 ? 1 / denominator : 0;
+  const scale = boundaryScale * Math.max(0, Math.min(1, inset));
+  return {
+    x: ellipse.centerX + dx * scale,
+    y: ellipse.centerY + dy * scale,
+  };
+}

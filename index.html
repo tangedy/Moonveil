@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#08050d" />
+    <meta name="description" content="Moonveil — a small dream about recognition." />
+    <title>Moonveil</title>
+  </head>
+  <body>
+    <main id="app" aria-label="Moonveil game">
+      <div id="game-shell">
+        <div id="game" aria-label="Game world"></div>
+        <div id="hud" class="hud is-hidden" aria-live="polite">
+          <span id="step-counter">STEPS 0000</span>
+          <div class="hud-actions">
+            <button id="motion-toggle" class="icon-button" type="button" aria-pressed="false">CALM</button>
+            <button id="mute-toggle" class="icon-button" type="button" aria-pressed="false">SOUND</button>
+          </div>
+        </div>
+        <section id="dialogue" class="dialogue is-hidden" aria-live="assertive" aria-modal="true">
+          <p id="speaker" class="speaker"></p>
+          <p id="dialogue-text" class="dialogue-text"></p>
+          <div id="dialogue-choices" class="dialogue-choices"></div>
+          <span id="continue-mark" class="continue-mark" aria-hidden="true">◆</span>
+        </section>
+        <div id="help" class="help is-hidden">MOVE · ARROWS / WASD&nbsp;&nbsp;&nbsp; LOOK · Z / ENTER / SPACE</div>
+      </div>
+      <p class="outside-note">Best experienced with sound. Progress saves in this browser.</p>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
