@@ -1,0 +1,629 @@
+You dont have to use all of this, its just ideas:
+
+Keeper
+The name
+
+I like KEEPER as the name displayed in dialogue because it feels like a role the character has mistaken for an identity.
+
+“Keepsake” could be something Moth calls them, perhaps affectionately or critically:
+
+MOTH: Keepsake is still keeping, I suppose.
+ DREAMER: Their name is Keeper.
+ MOTH: That is what they do.
+ DREAMER: What’s the difference?
+ MOTH: Ask them. Very gently.
+
+Keeper may no longer remember whether they were appointed to maintain the House, created by it, or once lived there.
+
+Voice guide
+
+Keeper should sound:
+
+Formal but not aristocratic
+Genuinely hospitable
+Exact
+Calm when discussing disturbing things
+Irritated by disorder but reluctant to admit distress
+Deeply sentimental beneath procedural language
+More likely to say “That is not how it was” than “I’m afraid”
+
+Keeper speaks as though every conversation is taking place in someone else’s home and proper conduct must be preserved.
+
+First meeting
+
+DREAMER enters a room without using a door.
+
+KEEPER: You’re late.
+ DREAMER: For what?
+ KEEPER: I had hoped you would know.
+ KEEPER: It would make the waiting seem much better organized.
+
+KEEPER: Please wipe your feet.
+ DREAMER: On what?
+ KEEPER: The mat.
+ DREAMER: There isn’t one.
+ KEEPER: No.
+ KEEPER: It was always getting underfoot.
+
+KEEPER: Welcome home.
+ DREAMER: This isn’t my home.
+ KEEPER: Then please forgive the House.
+ KEEPER: It has mistaken you very thoroughly.
+
+DREAMER: Who are you?
+ KEEPER: I keep the House.
+ DREAMER: Is Keeper your name?
+ KEEPER: It has answered adequately for a long time.
+ DREAMER: That isn’t the same as yes.
+ KEEPER: No answer remains the same as yes for very long.
+
+On the House having no doors
+
+DREAMER: Where are the doors?
+ KEEPER: Between the rooms.
+ DREAMER: I don’t see them.
+ KEEPER: Yes. That is the difficulty.
+
+DREAMER: How do you move between rooms?
+ KEEPER: I remember where they belong.
+ DREAMER: Can you show me?
+ KEEPER: If I could, the House would have no need of you.
+
+DREAMER: A house needs doors.
+ KEEPER: A house needs rooms.
+ KEEPER: Doors are merely agreements about the order.
+
+DREAMER: Was there ever a front door?
+ KEEPER: Of course.
+ DREAMER: Where was it?
+ KEEPER: At the front.
+ DREAMER: Where is the front?
+ KEEPER: That is a much less courteous question.
+
+Keeper’s hospitality
+
+KEEPER: Would you like tea?
+ DREAMER: Yes.
+ KEEPER: Excellent.
+ KEEPER: We have been waiting to remember where the kitchen is.
+
+KEEPER: Please sit wherever you were happiest.
+ DREAMER: I don’t remember being here.
+ KEEPER: Then any chair will be equally disappointing.
+
+KEEPER: Your room is almost as you left it.
+ DREAMER: Almost?
+ KEEPER: Time has been very respectful.
+ KEEPER: The House less so.
+
+KEEPER: Do not open any drawers that recognize you.
+ DREAMER: How will I know?
+ KEEPER: They will open first.
+
+Keeper describing rooms
+Kitchen
+
+KEEPER: The kitchen is set for six.
+ DREAMER: There are seven plates.
+ KEEPER: One of them is an apology.
+
+DREAMER: Who used to eat here?
+ KEEPER: The family.
+ DREAMER: Which family?
+ KEEPER: The one the table remembers.
+
+DREAMER: The food is still warm.
+ KEEPER: Please don’t comment on it.
+ DREAMER: Why?
+ KEEPER: It will think we have expectations.
+
+Bedroom
+
+KEEPER: This bed has never been slept in.
+ DREAMER: Why is it unmade?
+ KEEPER: It has had nightmares.
+
+DREAMER: Whose room was this?
+ KEEPER: Someone who needed it.
+ DREAMER: Did they live here?
+ KEEPER: Not successfully.
+
+Hallway
+
+DREAMER: Why are the portraits facing the wall?
+ KEEPER: Privacy.
+ DREAMER: The portraits asked for privacy?
+ KEEPER: The walls did.
+
+DREAMER: Why is this hallway so long?
+ KEEPER: You are remembering it slowly.
+
+Nursery
+
+DREAMER: The cradle is enormous.
+ KEEPER: The child grew.
+ DREAMER: Why didn’t you replace it with a bed?
+ KEEPER: They might have come back smaller.
+
+Staircase
+
+DREAMER: The stairs lead into the ceiling.
+ KEEPER: They used to lead upstairs.
+ DREAMER: What happened to upstairs?
+ KEEPER: It moved on.
+ DREAMER: Without the stairs?
+ KEEPER: It was always more independent.
+
+Keeper’s relationship with memory
+
+DREAMER: Do you remember everything about this House?
+ KEEPER: Everything important.
+ DREAMER: Who decided what was important?
+ KEEPER: That question was not retained.
+
+KEEPER: Memory is not merely keeping what happened.
+ DREAMER: What else is it?
+ KEEPER: Keeping it where it happened.
+
+DREAMER: This chair is broken.
+ KEEPER: It was broken then.
+ DREAMER: You could repair it.
+ KEEPER: Then it would be broken incorrectly.
+
+DREAMER: Why preserve all this?
+ KEEPER: Because it was loved.
+ DREAMER: Is it still loved?
+ KEEPER: I have preserved that too.
+
+DREAMER: Can a memory be wrong?
+ KEEPER: Certainly.
+ DREAMER: Then why trust it?
+ KEEPER: Accuracy is not the only way a thing can be faithful.
+
+DREAMER: The rooms keep changing.
+ KEEPER: They are not changing.
+ DREAMER: I saw the kitchen become a bedroom.
+ KEEPER: Yes.
+ KEEPER: It has always been very consistent about that.
+
+Keeper and DREAMER
+
+KEEPER: The House knows you.
+ DREAMER: How?
+ KEEPER: It becomes nervous when you approach.
+
+DREAMER: Did I live here?
+ KEEPER: You were expected here.
+ DREAMER: That isn’t the same thing.
+ KEEPER: No.
+ KEEPER: Expectation can survive much longer.
+
+DREAMER: Who was I in this House?
+ KEEPER: You were different in every room.
+ DREAMER: Which one was really me?
+ KEEPER: Which room was really the House?
+
+DREAMER: Did the people here love me?
+ KEEPER: They made a place for you.
+ DREAMER: That isn’t what I asked.
+ KEEPER: It may be the only answer they left.
+
+DREAMER: What if the House remembers the wrong person?
+ KEEPER: Then be kind to them.
+ DREAMER: To the House?
+ KEEPER: To the person.
+
+The portrait sequence
+
+Before the portrait changes:
+
+KEEPER: Do not decide too quickly who is in the portrait.
+ DREAMER: Why?
+ KEEPER: The portrait is very agreeable.
+
+If it shows a woman:
+
+DREAMER: Who is she?
+ KEEPER: She was here.
+ DREAMER: What was her name?
+ KEEPER: She had several.
+ DREAMER: Which did you use?
+ KEEPER: The one that brought her downstairs.
+
+If it shows an empty chair:
+
+DREAMER: There’s no one in it.
+ KEEPER: That does not mean it is empty.
+ DREAMER: What’s the difference?
+ KEEPER: Someone can be absent very loudly.
+
+If it shows DREAMER:
+
+DREAMER: That’s me.
+ KEEPER: Is it?
+ DREAMER: It has my face.
+ KEEPER: Then resemblance has become very ambitious.
+
+After the portrait stabilizes:
+
+KEEPER: There.
+ KEEPER: It has chosen what you saw.
+ DREAMER: I didn’t choose.
+ KEEPER: Attention is often choice without the courtesy of announcing itself.
+
+That last line is a thematic line, so it should appear only once.
+
+Keeper’s attachment to preservation
+
+DREAMER: Why won’t you let anything change?
+ KEEPER: Things change perfectly well without encouragement.
+
+KEEPER: I replaced the flowers once.
+ DREAMER: What happened?
+ KEEPER: The room became a room in which the flowers had been replaced.
+ KEEPER: It was unbearable.
+
+DREAMER: Keeping something isn’t the same as loving it.
+ KEEPER: No.
+ KEEPER: Keeping is what remains when loving can no longer reach it.
+
+DREAMER: You’re allowed to miss what this was.
+ KEEPER: I do not miss it.
+ DREAMER: Why not?
+ KEEPER: It has not been permitted to leave.
+
+DREAMER: Nothing can live like this.
+ KEEPER: That is why nothing has died.
+
+Cracks in Keeper’s composure
+
+A cup is moved:
+
+KEEPER: Put that back.
+ DREAMER: I only moved it a little.
+ KEEPER: A little is how “never again” enters a room.
+
+After DREAMER alters a room:
+
+KEEPER: You have changed it.
+ DREAMER: We needed a way through.
+ KEEPER: It was not in the way.
+ DREAMER: It was trapping us.
+ KEEPER: Those are not opposites.
+
+DREAMER: You’re angry.
+ KEEPER: I am maintaining my composure.
+ DREAMER: That isn’t what I said.
+ KEEPER: It is what I can maintain.
+
+KEEPER: Do you know how long I have kept this room unchanged?
+ DREAMER: No.
+ KEEPER: Neither do I.
+ KEEPER: That was the first thing it took.
+
+Keeper’s deeper fear
+
+DREAMER: If the House changes, the past still happened.
+ KEEPER: Will it?
+ DREAMER: Of course.
+ KEEPER: How fortunate you are to say that so easily.
+
+KEEPER: People say change does not erase what came before.
+ DREAMER: You don’t believe them?
+ KEEPER: They are usually speaking from somewhere that still exists.
+
+DREAMER: Who asked you to keep the House?
+ KEEPER: Someone who intended to return.
+ DREAMER: Did they?
+ KEEPER: I have not finished waiting.
+
+DREAMER: What if they don’t come back?
+ KEEPER: Then the House must remain ready.
+ DREAMER: Forever?
+ KEEPER: Otherwise the first day they are gone becomes the day I abandoned them.
+
+This gets to Keeper’s emotional knot: changing the House feels like retroactively choosing abandonment.
+
+Moth and Keeper together
+
+Their relationship should feel old, courteous, and strained.
+
+At the threshold
+
+KEEPER: You brought them back.
+ MOTH: They brought themself. I merely worried nearby.
+ KEEPER: You have always mistaken worry for accompaniment.
+ MOTH: And you have always mistaken furniture for forgiveness.
+
+That last exchange is sharp. It should come after their tension is established, not immediately.
+
+KEEPER: You may enter, Moth.
+ MOTH: How generous.
+ KEEPER: I did not say you may leave.
+ MOTH: There is the hospitality I remember.
+
+DREAMER: You two know each other.
+ MOTH: Unfortunately.
+ KEEPER: Intimately.
+ MOTH: Those are not synonyms.
+ KEEPER: Not to you.
+
+On DREAMER’s past
+
+DREAMER: Tell me who I was.
+ KEEPER: You belonged here.
+ MOTH: You visited.
+ KEEPER: Frequently.
+ MOTH: Desperately.
+ KEEPER: Happily.
+ MOTH: Sometimes.
+ DREAMER: Which of you is telling the truth?
+ MOTH: We both are.
+ KEEPER: That is the problem.
+
+Keeper criticizing Moth
+
+KEEPER: Moth believes that if no one opens the box, nothing inside can be broken.
+ MOTH: Keeper believes a sealed box is the same thing as a home.
+ DREAMER: And what do I believe?
+ KEEPER: You left the box.
+ MOTH: You came back.
+
+Sprout visiting the House
+
+Sprout should enter later, possibly after DREAMER creates the first stable passage.
+
+SPROUT: I have entered the House Without Doors.
+ KEEPER: Through a window.
+ SPROUT: The House should be more specific.
+
+KEEPER: Please do not touch anything.
+ SPROUT: I am touching the floor.
+ KEEPER: Regrettably.
+
+SPROUT: This room is frightening.
+ KEEPER: Nothing here will harm you.
+ SPROUT: That is not the only kind of frightening.
+
+SPROUT: Why do you keep all these broken things?
+ KEEPER: They are not broken.
+ SPROUT: Oh.
+ SPROUT: Why do you keep all these things that have become difficult to use?
+
+That is precisely the kind of simple question that can disarm Keeper.
+
+KEEPER: You are dropping leaves.
+ SPROUT: I do that when I grow.
+ KEEPER: Kindly stop.
+ SPROUT: I do not think I should.
+
+This can be a tiny turning point. Sprout’s natural growth is exactly what Keeper cannot tolerate, and Sprout refuses to apologize for it.
+
+SPROUT: You could plant something here.
+ KEEPER: It would change the room.
+ SPROUT: Yes.
+ KEEPER: You say that as though it were the purpose.
+ SPROUT: It is usually the purpose of planting something.
+
+House puzzle dialogue
+
+The House’s gameplay should involve forming connections between rooms by identifying meaningful associations.
+
+Connecting the bedroom to the kitchen through the smell of bread
+
+DREAMER: The bedroom smells like bread.
+ KEEPER: It did on difficult mornings.
+ DREAMER: Why?
+ KEEPER: Someone wanted waking up to feel worthwhile.
+
+After the passage forms:
+
+KEEPER: That door was not there.
+ DREAMER: You said the doors were forgotten.
+ KEEPER: Forgotten is not the same as invited back incorrectly.
+
+Connecting the nursery to the sitting room with a toy
+
+DREAMER: This toy belongs in the nursery.
+ KEEPER: It was kept in the sitting room.
+ DREAMER: Why?
+ KEEPER: The child wished to be where everyone else was.
+
+After moving it:
+
+KEEPER: You have changed the memory.
+ DREAMER: I moved a toy.
+ KEEPER: That is how memories are usually changed.
+
+Turning a portrait around
+
+KEEPER: Leave it.
+ DREAMER: I want to see.
+ KEEPER: Wanting to see is not always different from wanting to decide.
+
+Afterward:
+
+DREAMER: I don’t recognize them.
+ KEEPER: They may be relieved.
+
+Creating an exit
+
+Near the chapter’s end, DREAMER realizes the House needs a present-tense object—something not preserved from before.
+
+Sprout’s leaf can be planted.
+
+KEEPER: That does not belong here.
+ DREAMER: Not yet.
+ KEEPER: “Yet” is not a location.
+ SPROUT: It is where I live.
+
+The leaf grows into a small white plant, cracking the floor and revealing a passage.
+
+KEEPER: Remove it.
+ DREAMER: It’s alive.
+ KEEPER: So was everything here once.
+
+Later:
+
+KEEPER: I had forgotten how untidy growing is.
+
+The House’s star
+
+The star is trapped in a photograph—not simply hidden behind it.
+
+The photograph might show a room with one luminous point in its window. The image changes according to the House the player constructed.
+
+First discovering it
+
+DREAMER: There’s something moving in the picture.
+ KEEPER: Do not alarm it.
+ DREAMER: You knew it was alive?
+ KEEPER: I knew it had not accepted being still.
+
+DREAMER: Is that the star?
+ KEEPER: It is part of the photograph.
+ DREAMER: It’s trying to get out.
+ KEEPER: Many things appear to struggle when properly preserved.
+
+Persuading it to leave
+
+DREAMER cannot simply take it. They must speak to it through the photograph.
+
+Possible dialogue choices:
+
+“You’re safe here.”
+“You don’t belong here.”
+“The House is changing.”
+“I don’t know what will happen outside.”
+“You can choose.”
+
+The strongest route is not necessarily the most comforting one.
+
+If DREAMER says, “You’re safe here”:
+
+The star moves farther from the glass.
+ It has heard that sentence before.
+
+If DREAMER says, “You don’t belong here”:
+
+The photograph trembles.
+ Being rejected is not the same as being released.
+
+If DREAMER says, “The House is changing”:
+
+The star presses close to the glass.
+ It is frightened.
+ It is also listening.
+
+If DREAMER says, “I don’t know what will happen outside”:
+
+The star becomes very still.
+ For the first time, it seems to believe you.
+
+If DREAMER says, “You can choose”:
+
+Nothing happens.
+
+Then the star turns away from you.
+ It appears to be thinking.
+
+This should require patience. “You can choose” cannot secretly mean “choose to come with me right now.”
+
+Keeper resisting
+
+KEEPER: It belongs in the photograph.
+ DREAMER: It’s alive.
+ KEEPER: That is why it must be protected.
+ DREAMER: It wants to leave.
+ KEEPER: Wanting is frequently how loss introduces itself.
+
+DREAMER: You’re keeping it prisoner.
+ KEEPER: I am keeping it safe.
+ DREAMER: What’s the difference?
+ KEEPER: A prisoner is expected to have somewhere else to go.
+
+KEEPER: If it leaves, the photograph will change.
+ DREAMER: Yes.
+ KEEPER: You speak as though that were survivable.
+ DREAMER: Maybe it is.
+ KEEPER: For whom?
+
+If the star chooses to leave
+
+The star passes through the glass, leaving an empty space in the photograph.
+
+KEEPER: Put it back.
+ DREAMER: I can’t.
+ KEEPER: You have not tried.
+ DREAMER: It chose to leave.
+ KEEPER: Choices are not immune to correction.
+
+Keeper speaks to the altered photograph:
+
+KEEPER: I’m sorry.
+ DREAMER: To the star?
+ KEEPER: To the room it left behind.
+
+After a pause:
+
+KEEPER: It looks smaller now.
+ DREAMER: The room?
+ KEEPER: The past.
+
+If the star chooses to remain
+
+The story still progresses.
+
+The star settles in the photograph’s window.
+ Its light no longer strikes the glass like a fist.
+
+DREAMER: It’s staying.
+ KEEPER: Yes.
+ DREAMER: You sound disappointed.
+ KEEPER: I had prepared to be right for different reasons.
+
+The star might give DREAMER a reflected point of light rather than leaving physically.
+
+The glass remembers the warmth of your hand.
+
+This is enough to deepen recognition without turning the star into inventory.
+
+Keeper’s chapter-ending development
+
+Keeper should not complete their whole arc in one chapter. They do not suddenly embrace change. They make one small, difficult concession.
+
+Perhaps they allow Sprout’s plant to remain.
+
+KEEPER: It may stay.
+ SPROUT: Thank you.
+ KEEPER: I was speaking to the plant.
+ SPROUT: So was I.
+
+DREAMER: What will you do now?
+ KEEPER: Keep the House.
+ DREAMER: The way it was?
+ KEEPER: No.
+ KEEPER: I’m afraid I can no longer determine which way that was.
+
+KEEPER: You should go.
+ DREAMER: Do you want me to?
+ KEEPER: No.
+ KEEPER: I am attempting not to confuse that with a reason you must stay.
+
+That is an important step for Keeper: acknowledging affection without turning it into possession.
+
+DREAMER: Will the House be all right?
+ KEEPER: It has survived being remembered.
+ KEEPER: Perhaps it can survive becoming something else.
+
+Keeper’s farewell
+
+KEEPER: If you find a home—
+ DREAMER: Yes?
+ KEEPER: Do not keep it too carefully.
+
+Or:
+
+KEEPER: Come back when you are different.
+ DREAMER: Will you recognize me?
+ KEEPER: I will practice.

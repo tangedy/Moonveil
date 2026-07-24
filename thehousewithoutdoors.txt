@@ -1,0 +1,34 @@
+Design a 60–90 minute surreal narrative RPG chapter titled “The House Without Doors.”
+
+The player controls DREAMER, a nameless young person exploring Moonveil, a world in which recognition makes people, places, and memories increasingly definite. DREAMER has recently encountered their first Sleeping Star and learned that remembering something allows it to recognize them in return.
+
+The House Without Doors explores BELONGING. It is a polite, lonely, impossible home that remembers DREAMER but may remember them incorrectly. Its rooms have lost their physical connections because nobody agrees on how the House was lived in. The player restores passages through emotional and sensory associations rather than keys: a wooden toy connects a sitting room to a nursery, and the smell of bread connects a bedroom to a kitchen.
+
+The House is maintained by KEEPER, a formal and deeply sentimental character who believes preservation is love. Keeper has kept broken furniture, warm meals, unused rooms, and obsolete arrangements exactly as they were so absent occupants can return without experiencing change. Keeper is not a villain. They are terrified that altering the House would mean admitting that those who left are not returning—and that their devotion has become abandonment.
+
+MOTH accompanies DREAMER to the threshold but initially refuses to enter because “the House remembers me incorrectly.” Moth and Keeper later provide contradictory but emotionally compatible accounts of DREAMER’s history. Their disagreement must remain unresolved.
+
+SPROUT enters midway through the chapter through a window or crack. Sprout is charming, sincere, and unsuccessfully mysterious. Their natural growth challenges Keeper’s worldview. Keeper asks Sprout to stop shedding leaves; Sprout replies, “I do that when I grow,” and refuses to apologize for it.
+
+The visual style is black, white, and deep purple pixel art, with a restricted living green accent introduced by Sprout. Avoid conventional haunted-house imagery, gore, chases, and jump scares. The House is unsettling because it is prepared for a version of DREAMER who may no longer exist.
+
+Include seven compact spaces: a Threshold, Sitting Room, Kitchen, Bedroom, Nursery, Hallway of Portraits, and Unkept Room. Every room should express a form of domestic expectation. Use dense authored interactions rather than filler.
+
+One major sequence must react to which of three objects the player examines first: a portrait, a window, or a drawer. The first observation stabilizes a different subject in the portrait—a woman, an empty chair, or DREAMER. Do not tell the player that inspection order caused the result. This variation should affect later dialogue and imagery without creating a different main route.
+
+The chapter’s Sleeping Star is alive inside a photograph. DREAMER cannot forcibly collect it. They must speak honestly and allow it to decide whether to leave, remain, share part of its light, or delay its decision. All valid outcomes progress the story. “You can choose” must not secretly mean “choose the outcome most useful to the player.”
+
+The final traversal puzzle cannot be solved by perfectly reconstructing the past. DREAMER and Sprout plant Sprout’s leaf in the Unkept Room, a room with no fixed historical purpose. The plant creates a new passage rather than restoring an old one. Keeper initially objects because the plant “does not belong here.” DREAMER replies, “Not yet.” Sprout says, “‘Yet’ is where I live.”
+
+End with Keeper making one small concession rather than undergoing a complete transformation. Keeper allows the plant to remain and tells DREAMER to leave despite wanting them to stay:
+
+KEEPER: You should go.
+DREAMER: Do you want me to?
+KEEPER: No.
+KEEPER: I am attempting not to confuse that with a reason you must stay.
+
+DREAMER asks whether Keeper will recognize them if they return changed.
+
+KEEPER: I will practice.
+
+The chapter should leave the player understanding that being expected somewhere is not the same as belonging there, and that a home cannot love someone solely by preserving the version of them who once needed it.

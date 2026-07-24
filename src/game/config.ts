@@ -23,6 +23,7 @@ export const PALETTE = {
   violetLight: 0xc9a7f2,
   violetDark: 0x3b2258,
   violetDeep: 0x1d102b,
+  livingGreen: 0x79b18a,
 } as const;
 
 export const MOVEMENT = {
@@ -37,13 +38,20 @@ export const MOVEMENT = {
 } as const;
 
 export const SAVE_KEY = 'moonveil.save.v1';
-export const SAVE_SCHEMA_VERSION = 2 as const;
+export const SAVE_SCHEMA_VERSION = 4 as const;
 
 export const SceneId = {
   Boot: 'Boot',
   Launch: 'Launch',
   Prologue: 'Prologue',
   VioletGarden: 'VioletGarden',
+  HouseThreshold: 'HouseThreshold',
+  HouseSittingRoom: 'HouseSittingRoom',
+  HouseBedroom: 'HouseBedroom',
+  HouseHallway: 'HouseHallway',
+  HouseKitchen: 'HouseKitchen',
+  HouseNursery: 'HouseNursery',
+  HouseUnkeptRoom: 'HouseUnkeptRoom',
   SliceEnd: 'SliceEnd',
 } as const;
 
@@ -78,6 +86,20 @@ export const TextureKey = {
   Star1: 'star-1',
   ArchClosed: 'arch-closed',
   ArchOpen: 'arch-open',
+  Keeper0: 'keeper-0',
+  Keeper1: 'keeper-1',
+  PassageUnstable: 'passage-unstable',
+  PassageStable: 'passage-stable',
+  PortraitWoman: 'portrait-woman',
+  PortraitChair: 'portrait-chair',
+  PortraitDreamer: 'portrait-dreamer',
+  PhotographStar: 'photograph-star',
+  PhotographEmpty: 'photograph-empty',
+  PhotographShared: 'photograph-shared',
+  PhotographStill: 'photograph-still',
+  WoodenToy: 'wooden-toy',
+  SproutLeaf: 'sprout-leaf',
+  HousePlant: 'house-plant',
 } as const;
 
 export type TextureKey = (typeof TextureKey)[keyof typeof TextureKey];
@@ -86,12 +108,17 @@ export const AudioCue = {
   Step: 'step',
   DialogueMoth: 'dialogue-moth',
   DialogueSprout: 'dialogue-sprout',
+  DialogueKeeper: 'dialogue-keeper',
   DialogueWorld: 'dialogue-world',
   Loop: 'loop',
   Path: 'path',
   StarHum: 'star-hum',
   StarTake: 'star-take',
   Garden: 'garden',
+  House: 'house',
+  PassageMemory: 'passage-memory',
+  Photograph: 'photograph',
+  PlantGrowth: 'plant-growth',
 } as const;
 
 export type AudioCue = (typeof AudioCue)[keyof typeof AudioCue];

@@ -60,7 +60,7 @@ export class LaunchScene extends Phaser.Scene {
       await this.begin(async () => {
         stateStore.replace(savedState);
         audioManager.setMuted(savedState.preferences.muted);
-        this.scene.start(savedState.sliceComplete ? SceneId.SliceEnd : savedState.currentScene);
+        this.scene.start(savedState.currentScene);
       });
     }) : null;
 

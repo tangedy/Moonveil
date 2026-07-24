@@ -1,19 +1,50 @@
 import type { DialoguePage } from '../ui/DialogueOverlay';
 
 export const gardenDialogue = {
-  mothBefore: [
-    { speaker: 'Moth', text: 'Oh! A visitor wearing their shadow inside-out.' },
-    { speaker: 'Moth', text: 'The moon dropped something near the quiet pond.' },
-    { speaker: 'Moth', text: "If you find it, don't let it remember your name." },
+  mothBeforeStar: [
+    [
+      { speaker: 'Moth', text: 'Welcome back to the Violet Garden.' },
+      { speaker: 'DREAMER', text: 'Back?' },
+      { speaker: 'Moth', text: 'Welcome, then.' },
+      { speaker: 'Moth', text: 'The garden has always been sentimental.' },
+    ],
+    [
+      { speaker: 'Moth', text: 'Try not to step on the violets.' },
+      { speaker: 'DREAMER', text: 'I don’t see any violets.' },
+      { speaker: 'Moth', text: 'They remember you taller.' },
+    ],
+    [
+      { speaker: 'Moth', text: 'You’re looking for something.' },
+      { speaker: 'DREAMER', text: 'Am I?' },
+      { speaker: 'Moth', text: 'You have the posture for it.' },
+    ],
+    [
+      { speaker: 'Moth', text: 'Something fell near the quiet water.' },
+      { speaker: 'DREAMER', text: 'How do you know?' },
+      { speaker: 'Moth', text: 'The pond has been pretending not to look at it.' },
+    ],
+  ] satisfies DialoguePage[][],
+  mothAfterPond: [
+    { speaker: 'DREAMER', text: 'My reflection moved.' },
+    { speaker: 'Moth', text: 'Reflections do that.' },
+    { speaker: 'DREAMER', text: 'Before I did.' },
+    { speaker: 'Moth', text: 'Some are more experienced.' },
   ] satisfies DialoguePage[],
-  mothRepeat: [
-    { speaker: 'DREAMER', text: 'Have I been here before?' },
-    { speaker: 'Moth', text: 'Not this time.' },
-  ] satisfies DialoguePage[],
-  mothAfter: [
-    { speaker: 'Moth', text: 'Oh.' },
-    { speaker: 'Moth', text: 'Something recognized you.' },
-  ] satisfies DialoguePage[],
+  mothAfterStar: [
+    [
+      { speaker: 'DREAMER', text: 'Everything feels familiar.' },
+      { speaker: 'Moth', text: 'Familiarity is only strangeness that knows your name.' },
+    ],
+    [
+      { speaker: 'DREAMER', text: 'Have I been here before?' },
+      { speaker: 'Moth', text: 'Not this time.' },
+    ],
+    [
+      { speaker: 'DREAMER', text: 'What am I supposed to do here?' },
+      { speaker: 'Moth', text: 'You’ve only just arrived.' },
+      { speaker: 'Moth', text: 'It would be rude for the world to start demanding things already.' },
+    ],
+  ] satisfies DialoguePage[][],
   sproutBefore: [
     { speaker: 'Sprout', text: '…' },
     { speaker: 'Sprout', text: 'I am practicing being mysterious.' },

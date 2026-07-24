@@ -47,7 +47,7 @@ describe('SaveService', () => {
     const saves = new SaveService(storage);
     const loaded = saves.load();
     expect(loaded?.steps.real).toBe(42);
-    expect(loaded?.version).toBe(2);
+    expect(loaded?.version).toBe(4);
   });
 
   it('moves schema-v1 Prologue positions to the centered room', () => {
@@ -58,7 +58,7 @@ describe('SaveService', () => {
     storage.setItem(SAVE_KEY, JSON.stringify({ schema: 1, savedAt: 1, state: legacyState }));
 
     const loaded = new SaveService(storage).load();
-    expect(loaded?.version).toBe(2);
+    expect(loaded?.version).toBe(4);
     expect(loaded?.lastSafe.position).toEqual({ x: 320, y: 208 });
   });
 
@@ -71,7 +71,49 @@ describe('SaveService', () => {
     storage.setItem(SAVE_KEY, JSON.stringify({ schema: 1, savedAt: 1, state: legacyState }));
 
     const loaded = new SaveService(storage).load();
-    expect(loaded?.version).toBe(2);
+    expect(loaded?.version).toBe(4);
     expect(loaded?.lastSafe.position).toEqual({ x: 54, y: 302 });
+  });
+
+  it('migrates a completed schema-v2 Garden save into the House interlude', () => {
+    const storage = new MemoryStorage();
+    const legacyState = structuredClone(new GameStateStore().snapshot) as unknown as Record<string, unknown>;
+    legacyState.version = 2;
+    legacyState.currentScene = 'SliceEnd';
+    legacyState.lastSafe = { scene: 'SliceEnd', position: { x: 160, y: 90 } };
+    legacyState.sliceComplete = true;
+    delete legacyState.house;
+    storage.setItem(SAVE_KEY, JSON.stringify({ schema: 2, savedAt: 1, state: legacyState }));
+
+    const loaded = new SaveService(storage).load();
+    expect(loaded?.version).toBe(4);
+    expect(loaded?.garden.complete).toBe(true);
+    expect(loaded?.house.complete).toBe(false);
+    expect(loaded?.house.roomsEntered).toEqual([]);
+    expect(loaded?.currentScene).toBe('SliceEnd');
+  });
+
+  it('migrates schema-v3 progress without replaying previously forced dialogue', () => {
+    const storage = new MemoryStorage();
+    const legacyState = structuredClone(new GameStateStore().snapshot) as unknown as Record<string, unknown>;
+    legacyState.version = 3;
+    const garden = legacyState.garden as Record<string, unknown>;
+    delete garden.mothBeforeStarStep;
+    delete garden.mothPondResponseHeard;
+    delete garden.mothAfterStarStep;
+    const house = legacyState.house as Record<string, unknown>;
+    delete house.keeperRoomConversations;
+    delete house.keeperIntroductionStep;
+    delete house.thresholdMothSpoken;
+    house.keeperMet = true;
+    storage.setItem(SAVE_KEY, JSON.stringify({ schema: 3, savedAt: 1, state: legacyState }));
+
+    const loaded = new SaveService(storage).load();
+    expect(loaded?.version).toBe(4);
+    expect(loaded?.garden.mothBeforeStarStep).toBe(0);
+    expect(loaded?.house.keeperIntroductionStep).toBe(5);
+    expect(loaded?.house.keeperRoomConversations).toEqual([]);
+    expect(loaded?.house.keeperMet).toBe(true);
+    expect(loaded?.house.thresholdMothSpoken).toBe(true);
   });
 });
