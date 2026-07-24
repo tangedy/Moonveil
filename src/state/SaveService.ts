@@ -5,7 +5,12 @@ import {
   SceneId,
   type SceneId as SceneName,
 } from '../game/config';
-import { createDefaultState, type MoonveilState } from './GameState';
+import {
+  createDefaultHouseState,
+  createDefaultState,
+  type HouseState,
+  type MoonveilState,
+} from './GameState';
 
 interface SaveEnvelope {
   schema: typeof SAVE_SCHEMA_VERSION;
@@ -20,8 +25,51 @@ export interface StorageLike {
 }
 
 const validScenes = new Set<SceneName>(Object.values(SceneId));
+const validRooms = new Set(['threshold', 'sitting-room', 'bedroom', 'hallway', 'kitchen', 'nursery', 'unkept-room']);
+const validObservations = new Set(['portrait', 'window', 'drawer']);
+const validPortraitSubjects = new Set(['woman', 'empty-chair', 'dreamer']);
+const validBreadInterpretations = new Set(['difficult-mornings', 'welcome', 'habit']);
+const validToyInterpretations = new Set(['company', 'forgotten', 'waiting']);
+const validPhotographBeliefs = new Set(['dreamer', 'keeper', 'neither']);
+const validStarStatements = new Set(['outside-unknown', 'house-changing', 'safe-here', 'choose']);
+const validStarOutcomes = new Set(['left', 'shared', 'remained', 'delayed']);
 
-function hasMoonveilShape(value: unknown, version: number): boolean {
+function isNullableMember(value: unknown, values: ReadonlySet<string>): boolean {
+  return value === null || (typeof value === 'string' && values.has(value));
+}
+
+function hasHouseShape(value: unknown): value is HouseState {
+  if (!value || typeof value !== 'object') return false;
+  const house = value as Partial<HouseState>;
+  return (
+    Array.isArray(house.roomsEntered) &&
+    house.roomsEntered.every((room) => typeof room === 'string' && validRooms.has(room)) &&
+    Array.isArray(house.keeperRoomConversations) &&
+    house.keeperRoomConversations.every((room) => typeof room === 'string' && validRooms.has(room)) &&
+    isNullableMember(house.firstObservation, validObservations) &&
+    isNullableMember(house.portraitSubject, validPortraitSubjects) &&
+    typeof house.portraitCommented === 'boolean' &&
+    isNullableMember(house.breadInterpretation, validBreadInterpretations) &&
+    isNullableMember(house.toyInterpretation, validToyInterpretations) &&
+    typeof house.keeperMet === 'boolean' &&
+    Number.isInteger(house.keeperIntroductionStep) &&
+    (house.keeperIntroductionStep ?? -1) >= 0 &&
+    typeof house.thresholdMothSpoken === 'boolean' &&
+    typeof house.mothHistoryHeard === 'boolean' &&
+    typeof house.sproutArrived === 'boolean' &&
+    typeof house.sproutSpoken === 'boolean' &&
+    typeof house.photographDiscovered === 'boolean' &&
+    isNullableMember(house.photographBelief, validPhotographBeliefs) &&
+    isNullableMember(house.starStatement, validStarStatements) &&
+    isNullableMember(house.starOutcome, validStarOutcomes) &&
+    typeof house.unkeptDiscovered === 'boolean' &&
+    typeof house.leafPlanted === 'boolean' &&
+    typeof house.exitOpened === 'boolean' &&
+    typeof house.complete === 'boolean'
+  );
+}
+
+function hasBaseMoonveilShape(value: unknown, version: number): boolean {
   if (!value || typeof value !== 'object') return false;
   const candidate = value as Partial<MoonveilState> & { version?: number };
   return (
@@ -29,6 +77,8 @@ function hasMoonveilShape(value: unknown, version: number): boolean {
     typeof candidate.currentScene === 'string' &&
     validScenes.has(candidate.currentScene as SceneName) &&
     !!candidate.lastSafe &&
+    typeof candidate.lastSafe.scene === 'string' &&
+    validScenes.has(candidate.lastSafe.scene as SceneName) &&
     typeof candidate.lastSafe.position?.x === 'number' &&
     typeof candidate.lastSafe.position?.y === 'number' &&
     !!candidate.steps &&
@@ -40,27 +90,62 @@ function hasMoonveilShape(value: unknown, version: number): boolean {
     !!candidate.garden &&
     typeof candidate.garden.starTaken === 'boolean' &&
     !!candidate.preferences &&
-    typeof candidate.preferences.muted === 'boolean' &&
-    typeof candidate.sliceComplete === 'boolean'
+    typeof candidate.preferences.muted === 'boolean'
   );
 }
 
 export function isMoonveilState(value: unknown): value is MoonveilState {
-  return hasMoonveilShape(value, SAVE_SCHEMA_VERSION);
+  if (!hasBaseMoonveilShape(value, SAVE_SCHEMA_VERSION)) return false;
+  const candidate = value as Partial<MoonveilState>;
+  return (
+    typeof candidate.garden?.complete === 'boolean' &&
+    Number.isInteger(candidate.garden.mothBeforeStarStep) &&
+    candidate.garden.mothBeforeStarStep >= 0 &&
+    typeof candidate.garden.mothPondResponseHeard === 'boolean' &&
+    Number.isInteger(candidate.garden.mothAfterStarStep) &&
+    candidate.garden.mothAfterStarStep >= 0 &&
+    hasHouseShape(candidate.house)
+  );
 }
 
 function migrateLegacy(value: unknown): MoonveilState | null {
   if (!value || typeof value !== 'object') return null;
   const legacy = value as { schema?: number; state?: unknown };
 
-  if (legacy.schema === 1 && hasMoonveilShape(legacy.state, 1)) {
-    const migrated = structuredClone(legacy.state) as Omit<MoonveilState, 'version'> & { version: number };
-    migrated.version = SAVE_SCHEMA_VERSION;
-    if (migrated.lastSafe.scene === SceneId.Prologue) {
+  if ((legacy.schema === 1 || legacy.schema === 2 || legacy.schema === 3) && hasBaseMoonveilShape(legacy.state, legacy.schema)) {
+    const oldState = structuredClone(legacy.state) as Record<string, unknown>;
+    const migrated = createDefaultState();
+    migrated.currentScene = oldState.currentScene as SceneName;
+    migrated.lastSafe = oldState.lastSafe as MoonveilState['lastSafe'];
+    migrated.facing = oldState.facing as MoonveilState['facing'];
+    migrated.steps = oldState.steps as MoonveilState['steps'];
+    migrated.prologue = oldState.prologue as MoonveilState['prologue'];
+    migrated.garden = {
+      ...migrated.garden,
+      ...(oldState.garden as Partial<MoonveilState['garden']>),
+      complete: legacy.schema === 3
+        ? (oldState.garden as Partial<MoonveilState['garden']>).complete === true
+        : oldState.sliceComplete === true,
+    };
+    if (legacy.schema === 3) {
+      const oldHouse = oldState.house as Partial<HouseState>;
+      migrated.house = { ...createDefaultHouseState(), ...oldHouse };
+      if (oldHouse.keeperMet) {
+        migrated.house.keeperIntroductionStep = 5;
+        migrated.house.thresholdMothSpoken = true;
+      }
+      migrated.house.keeperRoomConversations = (oldHouse.roomsEntered ?? [])
+        .filter((room) => room !== 'threshold');
+    } else {
+      migrated.house = createDefaultHouseState();
+    }
+    migrated.preferences = oldState.preferences as MoonveilState['preferences'];
+    migrated.playtimeSeconds = typeof oldState.playtimeSeconds === 'number' ? oldState.playtimeSeconds : 0;
+    if (legacy.schema === 1 && migrated.lastSafe.scene === SceneId.Prologue) {
       migrated.lastSafe.position.x += PROLOGUE_GEOMETRY.roomOffsetX;
       migrated.lastSafe.position.y += PROLOGUE_GEOMETRY.roomOffsetY;
     }
-    return migrated as MoonveilState;
+    return migrated;
   }
 
   if (legacy.schema !== 0 || !legacy.state || typeof legacy.state !== 'object') return null;

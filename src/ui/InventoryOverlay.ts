@@ -101,6 +101,12 @@ export class InventoryOverlay {
     if (state.garden.starTaken) {
       inventory.push({ icon: '★', name: 'Sleeping Star', description: 'It dreams of the sky.' });
     }
+    if (state.house.starOutcome === 'left') {
+      inventory.push({ icon: '✦', name: 'Photograph Star', description: 'It chose the room outside the picture.' });
+    }
+    if (state.house.starOutcome === 'shared') {
+      inventory.push({ icon: '·', name: 'Shared Light', description: 'A reflection offered without leaving.' });
+    }
 
     this.items.replaceChildren(...inventory.map((item) => {
       const row = document.createElement('div');

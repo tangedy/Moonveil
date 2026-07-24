@@ -9,6 +9,38 @@ import {
 
 export type MothQuestion = 'where' | 'moth' | 'self';
 export type PhantomEvent = 'chair-recognition' | 'star-recognition';
+export type HouseRoomId = 'threshold' | 'sitting-room' | 'bedroom' | 'hallway' | 'kitchen' | 'nursery' | 'unkept-room';
+export type HouseObservation = 'portrait' | 'window' | 'drawer';
+export type PortraitSubject = 'woman' | 'empty-chair' | 'dreamer';
+export type BreadInterpretation = 'difficult-mornings' | 'welcome' | 'habit';
+export type ToyInterpretation = 'company' | 'forgotten' | 'waiting';
+export type PhotographBelief = 'dreamer' | 'keeper' | 'neither';
+export type StarStatement = 'outside-unknown' | 'house-changing' | 'safe-here' | 'choose';
+export type HouseStarOutcome = 'left' | 'shared' | 'remained' | 'delayed';
+
+export interface HouseState {
+  roomsEntered: HouseRoomId[];
+  keeperRoomConversations: HouseRoomId[];
+  firstObservation: HouseObservation | null;
+  portraitSubject: PortraitSubject | null;
+  portraitCommented: boolean;
+  breadInterpretation: BreadInterpretation | null;
+  toyInterpretation: ToyInterpretation | null;
+  keeperMet: boolean;
+  keeperIntroductionStep: number;
+  thresholdMothSpoken: boolean;
+  mothHistoryHeard: boolean;
+  sproutArrived: boolean;
+  sproutSpoken: boolean;
+  photographDiscovered: boolean;
+  photographBelief: PhotographBelief | null;
+  starStatement: StarStatement | null;
+  starOutcome: HouseStarOutcome | null;
+  unkeptDiscovered: boolean;
+  leafPlanted: boolean;
+  exitOpened: boolean;
+  complete: boolean;
+}
 
 export interface Position {
   x: number;
@@ -39,6 +71,9 @@ export interface MoonveilState {
   };
   garden: {
     mothSpoken: boolean;
+    mothBeforeStarStep: number;
+    mothPondResponseHeard: boolean;
+    mothAfterStarStep: number;
     sproutSpoken: boolean;
     pondExamined: boolean;
     starDiscovered: boolean;
@@ -46,17 +81,57 @@ export interface MoonveilState {
     consequenceResolved: boolean;
     whiteFlower: boolean;
     archUnlocked: boolean;
+    complete: boolean;
   };
+  house: HouseState;
   preferences: {
     muted: boolean;
     reducedMotion: boolean;
     textSpeed: 'slow' | 'normal' | 'fast';
   };
-  sliceComplete: boolean;
   playtimeSeconds: number;
 }
 
 export type StateListener = (state: Readonly<MoonveilState>) => void;
+
+export function createDefaultHouseState(): HouseState {
+  return {
+    roomsEntered: [],
+    keeperRoomConversations: [],
+    firstObservation: null,
+    portraitSubject: null,
+    portraitCommented: false,
+    breadInterpretation: null,
+    toyInterpretation: null,
+    keeperMet: false,
+    keeperIntroductionStep: 0,
+    thresholdMothSpoken: false,
+    mothHistoryHeard: false,
+    sproutArrived: false,
+    sproutSpoken: false,
+    photographDiscovered: false,
+    photographBelief: null,
+    starStatement: null,
+    starOutcome: null,
+    unkeptDiscovered: false,
+    leafPlanted: false,
+    exitOpened: false,
+    complete: false,
+  };
+}
+
+export function portraitSubjectFor(observation: HouseObservation): PortraitSubject {
+  if (observation === 'portrait') return 'woman';
+  if (observation === 'window') return 'empty-chair';
+  return 'dreamer';
+}
+
+export function starOutcomeFor(statement: StarStatement): HouseStarOutcome {
+  if (statement === 'outside-unknown') return 'left';
+  if (statement === 'house-changing') return 'shared';
+  if (statement === 'safe-here') return 'remained';
+  return 'delayed';
+}
 
 export function createDefaultState(): MoonveilState {
   return {
@@ -83,6 +158,9 @@ export function createDefaultState(): MoonveilState {
     },
     garden: {
       mothSpoken: false,
+      mothBeforeStarStep: 0,
+      mothPondResponseHeard: false,
+      mothAfterStarStep: 0,
       sproutSpoken: false,
       pondExamined: false,
       starDiscovered: false,
@@ -90,13 +168,14 @@ export function createDefaultState(): MoonveilState {
       consequenceResolved: false,
       whiteFlower: false,
       archUnlocked: false,
+      complete: false,
     },
+    house: createDefaultHouseState(),
     preferences: {
       muted: false,
       reducedMotion: false,
       textSpeed: 'normal',
     },
-    sliceComplete: false,
     playtimeSeconds: 0,
   };
 }
@@ -206,6 +285,24 @@ export class GameStateStore {
     this.emit();
   }
 
+  advanceGardenMothBeforeStar(): void {
+    this.state.garden.mothSpoken = true;
+    this.state.garden.mothBeforeStarStep = Math.min(4, this.state.garden.mothBeforeStarStep + 1);
+    this.emit();
+  }
+
+  markGardenMothPondResponse(): void {
+    this.state.garden.mothSpoken = true;
+    this.state.garden.mothPondResponseHeard = true;
+    this.emit();
+  }
+
+  advanceGardenMothAfterStar(): void {
+    this.state.garden.mothSpoken = true;
+    this.state.garden.mothAfterStarStep = Math.min(3, this.state.garden.mothAfterStarStep + 1);
+    this.emit();
+  }
+
   resolveVioletStar(): boolean {
     if (this.state.garden.consequenceResolved) return false;
     this.state.garden.starDiscovered = true;
@@ -214,6 +311,115 @@ export class GameStateStore {
     this.state.garden.whiteFlower = true;
     this.state.garden.archUnlocked = true;
     this.addPhantomSteps('star-recognition', 13);
+    this.emit();
+    return true;
+  }
+
+  enterHouseRoom(room: HouseRoomId): void {
+    if (this.state.house.roomsEntered.includes(room)) return;
+    this.state.house.roomsEntered.push(room);
+    this.emit();
+  }
+
+  advanceKeeperIntroduction(totalSteps: number): void {
+    if (this.state.house.keeperIntroductionStep >= totalSteps) return;
+    this.state.house.keeperIntroductionStep += 1;
+    if (!this.state.house.keeperMet) this.state.house.keeperMet = true;
+    this.emit();
+  }
+
+  markThresholdMothSpoken(): boolean {
+    if (this.state.house.thresholdMothSpoken) return false;
+    this.state.house.thresholdMothSpoken = true;
+    this.emit();
+    return true;
+  }
+
+  markKeeperRoomConversation(room: HouseRoomId): boolean {
+    if (this.state.house.keeperRoomConversations.includes(room)) return false;
+    this.state.house.keeperRoomConversations.push(room);
+    this.emit();
+    return true;
+  }
+
+  observeHouseFirst(object: HouseObservation): PortraitSubject {
+    if (this.state.house.firstObservation && this.state.house.portraitSubject) {
+      return this.state.house.portraitSubject;
+    }
+    const subject = portraitSubjectFor(object);
+    this.state.house.firstObservation = object;
+    this.state.house.portraitSubject = subject;
+    this.emit();
+    return subject;
+  }
+
+  markPortraitCommented(): boolean {
+    if (this.state.house.portraitCommented) return false;
+    this.state.house.portraitCommented = true;
+    this.emit();
+    return true;
+  }
+
+  resolveBreadAssociation(interpretation: BreadInterpretation): boolean {
+    if (this.state.house.breadInterpretation) return false;
+    this.state.house.breadInterpretation = interpretation;
+    this.arriveSprout();
+    this.updateUnkeptDiscovery();
+    this.emit();
+    return true;
+  }
+
+  resolveToyAssociation(interpretation: ToyInterpretation): boolean {
+    if (this.state.house.toyInterpretation) return false;
+    this.state.house.toyInterpretation = interpretation;
+    this.arriveSprout();
+    this.updateUnkeptDiscovery();
+    this.emit();
+    return true;
+  }
+
+  markMothHistoryHeard(): boolean {
+    if (this.state.house.mothHistoryHeard) return false;
+    this.state.house.mothHistoryHeard = true;
+    this.emit();
+    return true;
+  }
+
+  markSproutSpoken(): boolean {
+    if (this.state.house.sproutSpoken) return false;
+    this.state.house.sproutSpoken = true;
+    this.emit();
+    return true;
+  }
+
+  discoverHousePhotograph(): boolean {
+    if (this.state.house.photographDiscovered) return false;
+    this.state.house.photographDiscovered = true;
+    this.emit();
+    return true;
+  }
+
+  setPhotographBelief(belief: PhotographBelief): boolean {
+    if (this.state.house.photographBelief) return false;
+    this.state.house.photographBelief = belief;
+    this.emit();
+    return true;
+  }
+
+  resolveHouseStar(statement: StarStatement): HouseStarOutcome {
+    if (this.state.house.starOutcome) return this.state.house.starOutcome;
+    const outcome = starOutcomeFor(statement);
+    this.state.house.starStatement = statement;
+    this.state.house.starOutcome = outcome;
+    this.updateUnkeptDiscovery();
+    this.emit();
+    return outcome;
+  }
+
+  plantHouseLeaf(): boolean {
+    if (this.state.house.leafPlanted) return false;
+    this.state.house.leafPlanted = true;
+    this.state.house.exitOpened = true;
     this.emit();
     return true;
   }
@@ -227,7 +433,15 @@ export class GameStateStore {
   }
 
   completeSlice(): void {
-    this.state.sliceComplete = true;
+    this.state.garden.complete = true;
+    this.state.currentScene = SceneId.SliceEnd;
+    this.state.lastSafe = { scene: SceneId.SliceEnd, position: { x: 160, y: 90 } };
+    this.emit();
+  }
+
+  completeHouse(): void {
+    if (this.state.house.complete) return;
+    this.state.house.complete = true;
     this.state.currentScene = SceneId.SliceEnd;
     this.state.lastSafe = { scene: SceneId.SliceEnd, position: { x: 160, y: 90 } };
     this.emit();
@@ -235,6 +449,17 @@ export class GameStateStore {
 
   addPlaytime(seconds: number): void {
     if (Number.isFinite(seconds) && seconds > 0) this.state.playtimeSeconds += seconds;
+  }
+
+  private arriveSprout(): void {
+    this.state.house.sproutArrived = true;
+  }
+
+  private updateUnkeptDiscovery(): void {
+    const house = this.state.house;
+    if (house.breadInterpretation && house.toyInterpretation && house.starOutcome) {
+      house.unkeptDiscovered = true;
+    }
   }
 
   private emit(): void {

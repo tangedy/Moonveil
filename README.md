@@ -1,6 +1,6 @@
 # Moonveil
 
-Moonveil is an original, compact dream-RPG vertical slice built with Phaser 3 and TypeScript. It includes **The Chair in the Dark** prologue and **The Violet Garden** chapter.
+Moonveil is an original, compact dream-RPG built with Phaser 3 and TypeScript. It includes **The Chair in the Dark** prologue, **The Violet Garden**, and the complete **House Without Doors** chapter.
 
 The project takes inspiration from the emotional contrast and intimate overworld exploration of surreal RPGs, while using original characters, dialogue, visuals, audio, and code.
 
@@ -34,8 +34,11 @@ Movement is continuous and pixel-based, not tile-locked. Diagonal speed is norma
 3. Follow the path into Violet Garden.
 4. Speak with Moth and Sprout, examine the quiet pond, and listen when only the grass answers.
 5. Find the Sleeping Star, take it after its final line, observe the consequence, and leave through the awakened arch.
+6. Continue from the Garden interlude into the House Without Doors and meet Keeper.
+7. Explore seven compact rooms, let the first of three observations stabilize a portrait, and reconnect rooms through bread and a wooden toy.
+8. Hear Moth and Keeper’s incompatible memories, let the photograph’s star choose its own outcome, and create a new passage with Sprout’s leaf.
 
-Progress is stored in one versioned browser save slot. Autosaves occur after consequential interactions and scene transitions. A corrupted save is discarded safely. POCKET displays Soft Candy and adds the Sleeping Star once it has been found.
+Progress is stored in one versioned browser save slot. Autosaves occur after consequential interactions and scene transitions. A corrupted save is discarded safely. POCKET displays Soft Candy, the Sleeping Star, and any light freely offered by the House photograph.
 
 ## Architecture
 
@@ -45,6 +48,7 @@ Progress is stored in one versioned browser save slot. Autosaves occur after con
 - `InteractionSystem` ranks nearby targets by facing, distance, and NPC priority.
 - `DialogueSystem` presents accessible, animated DOM dialogue above the canvas.
 - `InventoryOverlay` presents the keyboard-accessible POCKET and locks movement while open.
+- `HouseRoomScene` centralizes lifecycle, saving, movement, ambience, and passage transitions for the seven House scenes.
 - `AssetRegistry` generates fallback pixel textures and resolves optional overrides.
 - `AudioManager` synthesizes quiet ambience and cues after the browser audio gesture.
 
@@ -60,11 +64,16 @@ Image keys include:
 - `dreamer-left-0`, `dreamer-left-1`, `dreamer-right-0`, `dreamer-right-1`
 - `chair`, `flower`, `flower-white`, `moth-0`, `moth-1`
 - `sprout-0`, `sprout-1`, `star-0`, `star-1`, `arch-closed`, `arch-open`
+- `keeper-0`, `keeper-1`, `passage-unstable`, `passage-stable`
+- `portrait-woman`, `portrait-chair`, `portrait-dreamer`
+- `photograph-star`, `photograph-empty`, `photograph-shared`, `photograph-still`
+- `wooden-toy`, `sprout-leaf`, `house-plant`
 
 Audio keys include:
 
 - `step`, `dialogue-moth`, `dialogue-sprout`, `dialogue-world`
 - `loop`, `path`, `star-hum`, `star-take`, `garden`
+- `dialogue-keeper`, `house`, `passage-memory`, `photograph`, `plant-growth`
 
 Example manifest entry:
 
@@ -79,4 +88,4 @@ The generated fallback remains active for every key without an override. Keep re
 
 ## Scope
 
-This milestone intentionally ends after Violet Garden. POCKET is a display-only story inventory; general item-use mechanics, combat, crafting, hunger, quest logs, status screens, naming, later chapters, and ending logic are not part of this slice.
+This milestone intentionally ends after the House Without Doors. POCKET is a display-only story inventory; general item-use mechanics, combat, crafting, hunger, quest logs, status screens, naming, the Paper Sea, later chapters, and ending logic are not part of this milestone.

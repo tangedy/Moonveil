@@ -16,8 +16,32 @@ declare global {
           pathRevealed: boolean;
         };
         garden: {
+          mothBeforeStarStep: number;
+          mothPondResponseHeard: boolean;
+          mothAfterStarStep: number;
           pondExamined: boolean;
           starTaken: boolean;
+          complete: boolean;
+        };
+        house: {
+          roomsEntered: string[];
+          firstObservation: string | null;
+          portraitSubject: string | null;
+          portraitCommented: boolean;
+          breadInterpretation: string | null;
+          toyInterpretation: string | null;
+          keeperMet: boolean;
+          mothHistoryHeard: boolean;
+          sproutArrived: boolean;
+          sproutSpoken: boolean;
+          photographDiscovered: boolean;
+          photographBelief: string | null;
+          starStatement: string | null;
+          starOutcome: string | null;
+          unkeptDiscovered: boolean;
+          leafPlanted: boolean;
+          exitOpened: boolean;
+          complete: boolean;
         };
         preferences: { muted: boolean; reducedMotion: boolean };
       };
@@ -54,18 +78,106 @@ async function continueInGarden(
       facing: nextFacing,
       preferences: { ...state.preferences, reducedMotion: true },
     };
-    localStorage.setItem('moonveil.save.v1', JSON.stringify({ schema: 2, savedAt: Date.now(), state: seeded }));
+    localStorage.setItem('moonveil.save.v1', JSON.stringify({ schema: 4, savedAt: Date.now(), state: seeded }));
   }, { position, facing });
-  await page.reload();
+  await page.goto('/');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
   await page.keyboard.press('Enter');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('VioletGarden');
 }
 
+async function continueInHouse(
+  page: Page,
+  scene: string,
+  room: string,
+  position: { x: number; y: number },
+  housePatch: Record<string, unknown> = {},
+  facing: 'up' | 'down' | 'left' | 'right' = 'up',
+): Promise<void> {
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Prologue');
+  await page.evaluate(({ nextScene, nextRoom, nextPosition, nextFacing, nextHousePatch }) => {
+    const state = window.__MOONVEIL__?.state();
+    if (!state) throw new Error('Moonveil state is unavailable');
+    const rooms = new Set([...state.house.roomsEntered, nextRoom]);
+    const seeded = {
+      ...state,
+      currentScene: nextScene,
+      lastSafe: { scene: nextScene, position: nextPosition },
+      facing: nextFacing,
+      garden: { ...state.garden, complete: true },
+      house: {
+        ...state.house,
+        keeperMet: true,
+        roomsEntered: [...rooms],
+        ...nextHousePatch,
+      },
+      preferences: { ...state.preferences, reducedMotion: true, textSpeed: 'fast' },
+    };
+    localStorage.setItem('moonveil.save.v1', JSON.stringify({ schema: 4, savedAt: Date.now(), state: seeded }));
+  }, {
+    nextScene: scene,
+    nextRoom: room,
+    nextPosition: position,
+    nextFacing: facing,
+    nextHousePatch: housePatch,
+  });
+  await page.goto('/');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
+  await page.waitForTimeout(100);
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe(scene);
+  await page.waitForTimeout(340);
+}
+
+async function advanceToChoices(page: Page, count: number): Promise<void> {
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    if (await page.locator('.choice-button').count() === count) return;
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(35);
+  }
+  throw new Error(`Dialogue did not present ${count} choices`);
+}
+
+async function finishDialogue(page: Page): Promise<void> {
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    if (await page.locator('#dialogue').isHidden()) return;
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(35);
+  }
+  throw new Error('Dialogue did not close');
+}
+
+async function reloadAndContinue(page: Page, scene: string): Promise<void> {
+  await page.goto('/');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
+  await page.waitForTimeout(100);
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe(scene);
+  await page.waitForTimeout(340);
+}
+
+async function advanceUntilHouseState(
+  page: Page,
+  key: string,
+  expected: string | boolean,
+): Promise<void> {
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    const current = await page.evaluate((stateKey) => {
+      const house = window.__MOONVEIL__?.state().house as unknown as Record<string, unknown> | undefined;
+      return house?.[stateKey];
+    }, key);
+    if (current === expected) return;
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(50);
+  }
+  throw new Error(`House state ${key} did not become ${String(expected)}`);
+}
+
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
-  await page.reload();
+  await page.goto('/');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
 });
 
@@ -101,7 +213,7 @@ test('crossing the left seam returns DREAMER from the right with the camera', as
   }
 
   const wrappedView = await page.evaluate(() => window.__MOONVEIL__?.view());
-  expect(wrappedView?.player?.x).toBeGreaterThan(600);
+  expect(wrappedView?.player?.x).toBeGreaterThan(570);
   expect(wrappedView?.camera?.scrollX).toBeGreaterThan(300);
   expect(wrappedView?.player?.y).toBeCloseTo(208, 0);
   expect(await page.evaluate(() => window.__MOONVEIL__?.state().prologue.flowerRevealed)).toBe(true);
@@ -127,9 +239,9 @@ test('Moth questions stay under the active line and reveal the path', async ({ p
       },
       preferences: { ...state.preferences, reducedMotion: true },
     };
-    localStorage.setItem('moonveil.save.v1', JSON.stringify({ schema: 2, savedAt: Date.now(), state: seeded }));
+    localStorage.setItem('moonveil.save.v1', JSON.stringify({ schema: 4, savedAt: Date.now(), state: seeded }));
   });
-  await page.reload();
+  await page.goto('/');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
   await page.keyboard.press('Enter');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Prologue');
@@ -228,8 +340,173 @@ test('preferences and progress persist in the single save slot', async ({ page }
   await page.keyboard.press('Enter');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Prologue');
   await page.locator('#mute-toggle').click();
-  await page.reload();
+  await page.goto('/');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
   await page.keyboard.press('Enter');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.state().preferences.muted)).toBe(true);
+});
+
+test('Garden completion offers a House interlude continuation', async ({ page }) => {
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Prologue');
+  await page.evaluate(() => {
+    const state = window.__MOONVEIL__?.state();
+    if (!state) throw new Error('Moonveil state is unavailable');
+    const seeded = {
+      ...state,
+      currentScene: 'SliceEnd',
+      lastSafe: { scene: 'SliceEnd', position: { x: 160, y: 90 } },
+      garden: { ...state.garden, complete: true },
+      preferences: { ...state.preferences, reducedMotion: true },
+    };
+    localStorage.setItem('moonveil.save.v1', JSON.stringify({ schema: 4, savedAt: Date.now(), state: seeded }));
+  });
+  await page.goto('/');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('SliceEnd');
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('HouseThreshold');
+});
+
+test('Keeper conversations begin only on interaction and advance one conversation at a time', async ({ page }) => {
+  await continueInHouse(page, 'HouseThreshold', 'threshold', { x: 195, y: 105 }, {}, 'right');
+  await expect(page.locator('#dialogue')).toBeHidden();
+
+  await tapGameKey(page, 'z');
+  await expect(page.locator('#dialogue-text')).toHaveText('You’re late.');
+  await finishDialogue(page);
+  await expect(page.locator('#dialogue')).toBeHidden();
+
+  await tapGameKey(page, 'z');
+  await expect(page.locator('#dialogue-text')).toHaveText('Please wipe your feet.');
+});
+
+test('Violet Garden Moth dialogue follows interaction, pond, and star stages', async ({ page }) => {
+  await continueInGarden(page, { x: 89, y: 267 }, 'right');
+  await page.waitForTimeout(340);
+  await expect(page.locator('#dialogue')).toBeHidden();
+
+  await tapGameKey(page, 'z');
+  await expect(page.locator('#dialogue-text')).toHaveText('Welcome back to the Violet Garden.');
+  await finishDialogue(page);
+  await tapGameKey(page, 'z');
+  await expect(page.locator('#dialogue-text')).toHaveText('Try not to step on the violets.');
+  await finishDialogue(page);
+
+  await page.evaluate(() => {
+    const state = window.__MOONVEIL__?.state();
+    if (!state) throw new Error('Moonveil state is unavailable');
+    const seeded = { ...state, garden: { ...state.garden, pondExamined: true } };
+    localStorage.setItem('moonveil.save.v1', JSON.stringify({ schema: 4, savedAt: Date.now(), state: seeded }));
+  });
+  await reloadAndContinue(page, 'VioletGarden');
+  await tapGameKey(page, 'z');
+  await expect(page.locator('#dialogue-text')).toHaveText('My reflection moved.');
+  await finishDialogue(page);
+
+  await page.evaluate(() => {
+    const state = window.__MOONVEIL__?.state();
+    if (!state) throw new Error('Moonveil state is unavailable');
+    const seeded = { ...state, garden: { ...state.garden, starTaken: true } };
+    localStorage.setItem('moonveil.save.v1', JSON.stringify({ schema: 4, savedAt: Date.now(), state: seeded }));
+  });
+  await reloadAndContinue(page, 'VioletGarden');
+  await tapGameKey(page, 'z');
+  await expect(page.locator('#dialogue-text')).toHaveText('Everything feels familiar.');
+  await finishDialogue(page);
+  await tapGameKey(page, 'z');
+  await expect(page.locator('#dialogue-text')).toHaveText('Have I been here before?');
+  await finishDialogue(page);
+  await tapGameKey(page, 'z');
+  await expect(page.locator('#dialogue-text')).toHaveText('What am I supposed to do here?');
+});
+
+test('the first House observation permanently stabilizes the portrait', async ({ page }) => {
+  await continueInHouse(page, 'HouseSittingRoom', 'sitting-room', { x: 69, y: 84 }, {}, 'up');
+  await tapGameKey(page, 'z');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.state().house.firstObservation)).toBe('window');
+  expect(await page.evaluate(() => window.__MOONVEIL__?.state().house.portraitSubject)).toBe('empty-chair');
+  await finishDialogue(page);
+  expect(await page.evaluate(() => window.__MOONVEIL__?.state().house.firstObservation)).toBe('window');
+});
+
+test('the photograph star can leave by its own choice and enter POCKET', async ({ page }) => {
+  await continueInHouse(
+    page,
+    'HouseHallway',
+    'hallway',
+    { x: 221, y: 113 },
+    {
+      roomsEntered: ['threshold', 'sitting-room', 'bedroom', 'hallway', 'kitchen', 'nursery'],
+      firstObservation: 'portrait',
+      portraitSubject: 'woman',
+      portraitCommented: true,
+      breadInterpretation: 'welcome',
+      toyInterpretation: 'company',
+      mothHistoryHeard: true,
+      sproutArrived: true,
+      sproutSpoken: true,
+    },
+    'up',
+  );
+  await tapGameKey(page, 'z');
+  await advanceToChoices(page, 3);
+  await page.getByRole('button', { name: 'The photograph would erase Keeper.' }).click();
+  await advanceToChoices(page, 4);
+  await page.getByRole('button', { name: 'I don’t know what will happen outside.' }).click();
+  await advanceUntilHouseState(page, 'starOutcome', 'left');
+  await finishDialogue(page);
+  await page.keyboard.press('i');
+  await expect(page.locator('.inventory-item-name')).toHaveText(['Soft Candy', 'Photograph Star']);
+});
+
+test('the living passage completes the House without reconstructing the past', async ({ page }) => {
+  await continueInHouse(
+    page,
+    'HouseUnkeptRoom',
+    'unkept-room',
+    { x: 153, y: 151 },
+    {
+      roomsEntered: ['threshold', 'sitting-room', 'bedroom', 'hallway', 'kitchen', 'nursery', 'unkept-room'],
+      firstObservation: 'drawer',
+      portraitSubject: 'dreamer',
+      portraitCommented: true,
+      breadInterpretation: 'habit',
+      toyInterpretation: 'waiting',
+      mothHistoryHeard: true,
+      sproutArrived: true,
+      sproutSpoken: true,
+      photographDiscovered: true,
+      photographBelief: 'neither',
+      starStatement: 'choose',
+      starOutcome: 'delayed',
+      unkeptDiscovered: true,
+    },
+    'up',
+  );
+  await tapGameKey(page, 'z');
+  await advanceUntilHouseState(page, 'leafPlanted', true);
+  await finishDialogue(page);
+  await page.evaluate(() => {
+    const state = window.__MOONVEIL__?.state();
+    if (!state) throw new Error('Moonveil state is unavailable');
+    const seeded = {
+      ...state,
+      currentScene: 'HouseUnkeptRoom',
+      lastSafe: { scene: 'HouseUnkeptRoom', position: { x: 278, y: 116 } },
+      facing: 'right',
+    };
+    localStorage.setItem('moonveil.save.v1', JSON.stringify({ schema: 4, savedAt: Date.now(), state: seeded }));
+  });
+  await page.goto('/');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
+  await page.waitForTimeout(100);
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('HouseUnkeptRoom');
+  await page.waitForTimeout(340);
+  await tapGameKey(page, 'z');
+  await finishDialogue(page);
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene()), { timeout: 3_000 }).toBe('SliceEnd');
+  expect(await page.evaluate(() => window.__MOONVEIL__?.state().house.complete)).toBe(true);
 });

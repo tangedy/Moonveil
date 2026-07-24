@@ -3,6 +3,13 @@ import './styles.css';
 import { GAME_HEIGHT, GAME_WIDTH, PALETTE, SceneId } from './game/config';
 import { stateStore } from './game/services';
 import { BootScene } from './scenes/BootScene';
+import { HouseBedroomScene } from './scenes/HouseBedroomScene';
+import { HouseHallwayScene } from './scenes/HouseHallwayScene';
+import { HouseKitchenScene } from './scenes/HouseKitchenScene';
+import { HouseNurseryScene } from './scenes/HouseNurseryScene';
+import { HouseSittingRoomScene } from './scenes/HouseSittingRoomScene';
+import { HouseThresholdScene } from './scenes/HouseThresholdScene';
+import { HouseUnkeptRoomScene } from './scenes/HouseUnkeptRoomScene';
 import { LaunchScene } from './scenes/LaunchScene';
 import { PrologueScene } from './scenes/PrologueScene';
 import { SliceEndScene } from './scenes/SliceEndScene';
@@ -43,7 +50,20 @@ const config: Phaser.Types.Core.GameConfig = {
     mouse: true,
     touch: false,
   },
-  scene: [BootScene, LaunchScene, PrologueScene, VioletGardenScene, SliceEndScene],
+  scene: [
+    BootScene,
+    LaunchScene,
+    PrologueScene,
+    VioletGardenScene,
+    HouseThresholdScene,
+    HouseSittingRoomScene,
+    HouseBedroomScene,
+    HouseHallwayScene,
+    HouseKitchenScene,
+    HouseNurseryScene,
+    HouseUnkeptRoomScene,
+    SliceEndScene,
+  ],
 };
 
 const game = new Phaser.Game(config);

@@ -16,10 +16,14 @@ const toneDefinitions: Partial<Record<Cue, ToneDefinition>> = {
   [AudioCue.Step]: { frequency: 72, duration: 0.035, volume: 0.018, type: 'square' },
   [AudioCue.DialogueMoth]: { frequency: 390, duration: 0.035, volume: 0.018, type: 'sine' },
   [AudioCue.DialogueSprout]: { frequency: 545, duration: 0.03, volume: 0.014, type: 'triangle' },
+  [AudioCue.DialogueKeeper]: { frequency: 185, duration: 0.045, volume: 0.014, type: 'triangle' },
   [AudioCue.DialogueWorld]: { frequency: 245, duration: 0.04, volume: 0.014, type: 'sine' },
   [AudioCue.Loop]: { frequency: 110, duration: 0.32, volume: 0.035, type: 'sine' },
   [AudioCue.Path]: { frequency: 330, duration: 0.7, volume: 0.03, type: 'triangle' },
   [AudioCue.StarTake]: { frequency: 620, duration: 0.85, volume: 0.04, type: 'sine' },
+  [AudioCue.PassageMemory]: { frequency: 262, duration: 0.62, volume: 0.026, type: 'sine' },
+  [AudioCue.Photograph]: { frequency: 466, duration: 0.75, volume: 0.025, type: 'triangle' },
+  [AudioCue.PlantGrowth]: { frequency: 294, duration: 0.9, volume: 0.028, type: 'sine' },
 };
 
 export class AudioManager {
@@ -29,7 +33,9 @@ export class AudioManager {
   private lastDialogueTick = 0;
   private ambienceNodes: OscillatorNode[] = [];
   private ambienceGains: GainNode[] = [];
+  private ambienceTargets: number[] = [];
   private gardenSound: VolumeSound | null = null;
+  private houseSound: VolumeSound | null = null;
   private starSound: VolumeSound | null = null;
   private starVolume = 0;
   private starOscillator: OscillatorNode | null = null;
@@ -47,8 +53,11 @@ export class AudioManager {
 
   setMuted(muted: boolean): void {
     this.muted = muted;
-    this.ambienceGains.forEach((gain) => gain.gain.setTargetAtTime(muted ? 0 : 0.008, gain.context.currentTime, 0.08));
+    this.ambienceGains.forEach((gain, index) => {
+      gain.gain.setTargetAtTime(muted ? 0 : (this.ambienceTargets[index] ?? 0.003), gain.context.currentTime, 0.08);
+    });
     this.gardenSound?.setVolume(muted ? 0 : 0.16);
+    this.houseSound?.setVolume(muted ? 0 : 0.14);
     this.starSound?.setVolume(muted ? 0 : this.starVolume);
     if (this.starGain) this.starGain.gain.setTargetAtTime(muted ? 0 : this.starVolume, this.starGain.context.currentTime, 0.05);
   }
@@ -80,7 +89,14 @@ export class AudioManager {
     const now = performance.now();
     if (now - this.lastDialogueTick < 45) return;
     this.lastDialogueTick = now;
-    const cue = speaker === 'Moth' ? AudioCue.DialogueMoth : speaker === 'Sprout' ? AudioCue.DialogueSprout : AudioCue.DialogueWorld;
+    const normalized = speaker?.toLowerCase();
+    const cue = normalized === 'moth'
+      ? AudioCue.DialogueMoth
+      : normalized === 'sprout'
+        ? AudioCue.DialogueSprout
+        : normalized === 'keeper'
+          ? AudioCue.DialogueKeeper
+          : AudioCue.DialogueWorld;
     this.cue(cue);
   }
 
@@ -96,13 +112,39 @@ export class AudioManager {
     [98, 147].forEach((frequency, index) => {
       const oscillator = this.context!.createOscillator();
       const gain = this.context!.createGain();
+      const target = index === 0 ? 0.006 : 0.003;
       oscillator.type = index === 0 ? 'sine' : 'triangle';
       oscillator.frequency.value = frequency;
-      gain.gain.value = index === 0 ? 0.006 : 0.003;
+      gain.gain.value = this.muted ? 0 : target;
       oscillator.connect(gain).connect(this.context!.destination);
       oscillator.start();
       this.ambienceNodes.push(oscillator);
       this.ambienceGains.push(gain);
+      this.ambienceTargets.push(target);
+    });
+  }
+
+  startHouseAmbience(): void {
+    this.stopAmbience();
+    const overrideKey = `override-audio:${AudioCue.House}`;
+    if (this.scene?.cache.audio.exists(overrideKey)) {
+      this.houseSound = this.scene.sound.add(overrideKey, { loop: true, volume: this.muted ? 0 : 0.14 }) as VolumeSound;
+      this.houseSound.play();
+      return;
+    }
+    if (!this.context) return;
+    [65.41, 98.0, 130.81].forEach((frequency, index) => {
+      const oscillator = this.context!.createOscillator();
+      const gain = this.context!.createGain();
+      const target = index === 0 ? 0.0045 : index === 1 ? 0.0022 : 0.0012;
+      oscillator.type = index === 1 ? 'triangle' : 'sine';
+      oscillator.frequency.value = frequency;
+      gain.gain.value = this.muted ? 0 : target;
+      oscillator.connect(gain).connect(this.context!.destination);
+      oscillator.start();
+      this.ambienceNodes.push(oscillator);
+      this.ambienceGains.push(gain);
+      this.ambienceTargets.push(target);
     });
   }
 
@@ -145,6 +187,9 @@ export class AudioManager {
     this.gardenSound?.stop();
     this.gardenSound?.destroy();
     this.gardenSound = null;
+    this.houseSound?.stop();
+    this.houseSound?.destroy();
+    this.houseSound = null;
     this.ambienceNodes.forEach((node) => {
       node.stop();
       node.disconnect();
@@ -152,6 +197,7 @@ export class AudioManager {
     this.ambienceGains.forEach((gain) => gain.disconnect());
     this.ambienceNodes = [];
     this.ambienceGains = [];
+    this.ambienceTargets = [];
     this.stopStarHum();
   }
 }

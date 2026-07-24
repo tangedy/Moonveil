@@ -245,9 +245,18 @@ export class VioletGardenScene extends Phaser.Scene {
 
   private async talkToMoth(): Promise<void> {
     const garden = stateStore.snapshot.garden;
-    const pages = garden.starTaken ? gardenDialogue.mothAfter : garden.mothSpoken ? gardenDialogue.mothRepeat : gardenDialogue.mothBefore;
-    await this.say(pages);
-    stateStore.markGardenInteraction('moth');
+    if (garden.starTaken) {
+      const index = Math.min(garden.mothAfterStarStep, gardenDialogue.mothAfterStar.length - 1);
+      await this.say(gardenDialogue.mothAfterStar[index]!);
+      stateStore.advanceGardenMothAfterStar();
+    } else if (garden.mothBeforeStarStep > 0 && garden.pondExamined && !garden.mothPondResponseHeard) {
+      await this.say(gardenDialogue.mothAfterPond);
+      stateStore.markGardenMothPondResponse();
+    } else {
+      const index = Math.min(garden.mothBeforeStarStep, gardenDialogue.mothBeforeStar.length - 1);
+      await this.say(gardenDialogue.mothBeforeStar[index]!);
+      stateStore.advanceGardenMothBeforeStar();
+    }
     this.checkpoint();
   }
 
