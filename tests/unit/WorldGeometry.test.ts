@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { projectInsideEllipse } from '../../src/systems/PondReflection';
+import { projectInsideEllipse, reflectionFeetRotation } from '../../src/systems/PondReflection';
 import { resolveWorldWrap } from '../../src/systems/WorldWrap';
 
 const wrapBounds = { width: 640, height: 360, margin: 8, inset: 10 };
@@ -50,5 +50,15 @@ describe('projectInsideEllipse', () => {
       ((projected.x - pond.centerX) ** 2) / (pond.radiusX ** 2) +
       ((projected.y - pond.centerY) ** 2) / (pond.radiusY ** 2);
     expect(normalized).toBeCloseTo(0.72 ** 2, 5);
+  });
+});
+
+describe('reflectionFeetRotation', () => {
+  it('points feet toward the player around the pond', () => {
+    const reflection = { x: 350, y: 218 };
+    expect(reflectionFeetRotation(reflection, { x: 350, y: 300 })).toBeCloseTo(0, 5);
+    expect(reflectionFeetRotation(reflection, { x: 350, y: 100 })).toBeCloseTo(-Math.PI, 5);
+    expect(reflectionFeetRotation(reflection, { x: 500, y: 218 })).toBeCloseTo(-Math.PI / 2, 5);
+    expect(reflectionFeetRotation(reflection, { x: 200, y: 218 })).toBeCloseTo(Math.PI / 2, 5);
   });
 });

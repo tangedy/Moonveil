@@ -11,7 +11,7 @@ import {
   stateStore,
 } from '../game/services';
 import { InteractionSystem } from '../systems/InteractionSystem';
-import { projectInsideEllipse } from '../systems/PondReflection';
+import { projectInsideEllipse, reflectionFeetRotation } from '../systems/PondReflection';
 
 const POND = { centerX: 350, centerY: 218, radiusX: 67, radiusY: 37 } as const;
 const REFLECTION_SCALE_X = 0.82;
@@ -174,7 +174,6 @@ export class VioletGardenScene extends Phaser.Scene {
       .setDepth(4)
       .setAlpha(0.52)
       .setScale(REFLECTION_SCALE_X, REFLECTION_SCALE_Y)
-      .setFlipY(true)
       .setTint(PALETTE.violetLight)
       .setName('pond-reflection');
     this.reflection.setMask(this.reflectionMaskShape.createGeometryMask());
@@ -242,7 +241,12 @@ export class VioletGardenScene extends Phaser.Scene {
 
   private async talkToSprout(): Promise<void> {
     const garden = stateStore.snapshot.garden;
-    const pages = garden.starTaken ? gardenDialogue.sproutAfter : garden.sproutSpoken ? gardenDialogue.sproutRepeat : gardenDialogue.sproutBefore;
+    const pages =
+      garden.starTaken && garden.sproutSpoken
+        ? gardenDialogue.sproutAfter
+        : garden.sproutSpoken
+          ? gardenDialogue.sproutRepeat
+          : gardenDialogue.sproutBefore;
     await this.say(pages);
     stateStore.markGardenInteraction('sprout');
     this.checkpoint();
@@ -346,9 +350,17 @@ export class VioletGardenScene extends Phaser.Scene {
     const projected = projectInsideEllipse(this.dreamer, POND);
     this.reflection.x = Phaser.Math.Linear(this.reflection.x, projected.x, 0.12);
     this.reflection.y = Phaser.Math.Linear(this.reflection.y, projected.y, 0.12);
-    if (this.reflection.texture.key !== this.dreamer.texture.key) {
-      this.reflection.setTexture(this.dreamer.texture.key);
+
+    const walkFrame = this.dreamer.texture.key.endsWith('-1') ? 1 : 0;
+    const downKey = walkFrame === 1 ? TextureKey.DreamerDown1 : TextureKey.DreamerDown0;
+    const resolved = assetRegistry.resolve(this, downKey);
+    if (this.reflection.texture.key !== resolved) {
+      this.reflection.setTexture(resolved);
     }
+
+    const targetRotation = reflectionFeetRotation(this.reflection, this.dreamer);
+    this.reflection.rotation = Phaser.Math.Angle.RotateTo(this.reflection.rotation, targetRotation, 0.18);
+
     if (!this.reflectionBlinking) {
       const distance = Phaser.Math.Distance.Between(
         this.dreamer.x,

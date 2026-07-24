@@ -25,3 +25,9 @@ export function projectInsideEllipse(point: Point, ellipse: Ellipse, inset = 0.7
     y: ellipse.centerY + dy * scale,
   };
 }
+
+/** Rotation so a down-facing sprite's feet aim from `from` toward `toward`. */
+export function reflectionFeetRotation(from: Point, toward: Point): number {
+  const angle = Math.atan2(toward.y - from.y, toward.x - from.x);
+  return angle - Math.PI / 2;
+}

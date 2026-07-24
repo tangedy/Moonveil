@@ -27,6 +27,7 @@ export const PALETTE = {
 
 export const MOVEMENT = {
   speed: 72,
+  sprintSpeed: 118,
   bodyWidth: 8,
   bodyHeight: 7,
   bodyOffsetX: 4,

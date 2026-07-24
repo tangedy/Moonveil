@@ -62,7 +62,7 @@ export class Dreamer extends Phaser.Physics.Arcade.Sprite {
 
   update(delta: number): void {
     const moved = Phaser.Math.Distance.Between(this.previousPosition.x, this.previousPosition.y, this.x, this.y);
-    if (moved > 0.01 && moved < MOVEMENT.speed * 0.15) {
+    if (moved > 0.01 && moved < MOVEMENT.sprintSpeed * 0.15) {
       const gained = this.store.addTravelDistance(moved);
       if (gained > 0) this.audio.cue(AudioCue.Step);
     }
@@ -79,14 +79,18 @@ export class Dreamer extends Phaser.Physics.Arcade.Sprite {
     const right = this.cursors.right.isDown || this.keys.D.isDown;
     const up = this.cursors.up.isDown || this.keys.W.isDown;
     const down = this.cursors.down.isDown || this.keys.S.isDown;
+    const sprinting = this.cursors.shift?.isDown ?? false;
+    const speed = sprinting ? MOVEMENT.sprintSpeed : MOVEMENT.speed;
     const velocity = new Phaser.Math.Vector2(Number(right) - Number(left), Number(down) - Number(up));
     const walking = velocity.lengthSq() > 0;
 
+    body.setMaxVelocity(speed, speed);
+
     if (walking) {
-      velocity.normalize().scale(MOVEMENT.speed);
+      velocity.normalize().scale(speed);
       body.setVelocity(velocity.x, velocity.y);
       this.updateFacing(left, right, up, down);
-      this.walkTime += delta;
+      this.walkTime += delta * (sprinting ? 1.45 : 1);
     } else {
       body.setVelocity(0, 0);
       this.walkTime = 0;
