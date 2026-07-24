@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { PALETTE, SceneId, TextureKey } from '../game/config';
-import { assetRegistry, audioManager, dialogueOverlay, hud, saveService, stateStore } from '../game/services';
+import { assetRegistry, audioManager, dialogueOverlay, hud, inventoryOverlay, saveService, stateStore } from '../game/services';
 
 export class LaunchScene extends Phaser.Scene {
   private starting = false;
@@ -12,7 +12,8 @@ export class LaunchScene extends Phaser.Scene {
   create(): void {
     hud.show(false);
     hud.hideHelp();
-    dialogueOverlay.hide();
+    inventoryOverlay.detach();
+    void dialogueOverlay.hide(true);
     audioManager.attach(this);
     audioManager.stopAmbience();
     this.cameras.main.setBackgroundColor(PALETTE.ink);

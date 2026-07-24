@@ -19,8 +19,10 @@ Requirements: Node.js 20.19 or newer.
 ## Controls
 
 - Move freely: Arrow keys or WASD
+- Sprint: Shift
 - Interact/advance: Z, Enter, or Space
 - Dialogue choices: Up/Down and Z/Enter/Space, or mouse
+- Open/close POCKET: I (X or Escape also closes it)
 - Sound and reduced-motion toggles appear in the upper-right corner
 
 Movement is continuous and pixel-based, not tile-locked. Diagonal speed is normalized, collision is resolved by Phaser Arcade Physics, facing remains four-directional, and the step counter derives steps from actual distance traveled.
@@ -30,10 +32,10 @@ Movement is continuous and pixel-based, not tile-locked. Diagonal speed is norma
 1. Walk beyond the white patch three times as the room changes.
 2. Meet Moth and ask all three questions in any order.
 3. Follow the path into Violet Garden.
-4. Speak with Moth and Sprout, examine the quiet pond, and find the Sleeping Star.
-5. Choose whether to hold the star close, observe the consequence, and leave through the awakened arch.
+4. Speak with Moth and Sprout, examine the quiet pond, and listen when only the grass answers.
+5. Find the Sleeping Star, take it after its final line, observe the consequence, and leave through the awakened arch.
 
-Progress is stored in one versioned browser save slot. Autosaves occur after consequential interactions and scene transitions. A corrupted save is discarded safely.
+Progress is stored in one versioned browser save slot. Autosaves occur after consequential interactions and scene transitions. A corrupted save is discarded safely. POCKET displays Soft Candy and adds the Sleeping Star once it has been found.
 
 ## Architecture
 
@@ -41,7 +43,8 @@ Progress is stored in one versioned browser save slot. Autosaves occur after con
 - `SaveService` handles validation, migration, reset, and localStorage persistence.
 - `Dreamer` provides smooth eight-direction input, four-direction facing, animation, collision, and distance tracking.
 - `InteractionSystem` ranks nearby targets by facing, distance, and NPC priority.
-- `DialogueSystem` presents accessible DOM dialogue above the canvas.
+- `DialogueSystem` presents accessible, animated DOM dialogue above the canvas.
+- `InventoryOverlay` presents the keyboard-accessible POCKET and locks movement while open.
 - `AssetRegistry` generates fallback pixel textures and resolves optional overrides.
 - `AudioManager` synthesizes quiet ambience and cues after the browser audio gesture.
 
@@ -76,4 +79,4 @@ The generated fallback remains active for every key without an override. Keep re
 
 ## Scope
 
-This milestone intentionally ends after Violet Garden. Combat, crafting, hunger, quest logs, status screens, a general inventory, naming, later chapters, and ending logic are not part of this slice.
+This milestone intentionally ends after Violet Garden. POCKET is a display-only story inventory; general item-use mechanics, combat, crafting, hunger, quest logs, status screens, naming, later chapters, and ending logic are not part of this slice.

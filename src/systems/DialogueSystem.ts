@@ -35,7 +35,7 @@ export class DialogueSystem {
     try {
       return await conduct((pages, choices = []) => this.present(pages, choices, false));
     } finally {
-      this.overlay.hide();
+      await this.overlay.hide();
       setLocked(false);
     }
   }

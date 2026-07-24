@@ -5,8 +5,10 @@ import { AudioCue, PALETTE, PROLOGUE_GEOMETRY, SceneId, TextureKey } from '../ga
 import {
   assetRegistry,
   audioManager,
+  dialogueOverlay,
   dialogueSystem,
   hud,
+  inventoryOverlay,
   saveService,
   stateStore,
 } from '../game/services';
@@ -62,6 +64,11 @@ export class PrologueScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.dreamer, true, 0.09, 0.09);
     this.cameras.main.setRoundPixels(true);
     this.cameras.main.centerOn(this.dreamer.x, this.dreamer.y);
+    inventoryOverlay.attach({
+      canOpen: () => !dialogueOverlay.isVisible && !this.transitioning,
+      onVisibilityChange: (open) => this.dreamer.setInputLocked(open),
+    });
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => inventoryOverlay.detach());
 
     this.interactions.add({
       id: 'prologue-chair',

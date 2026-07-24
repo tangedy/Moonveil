@@ -7,7 +7,7 @@ export interface Ellipse {
   radiusY: number;
 }
 
-export function projectInsideEllipse(point: Point, ellipse: Ellipse, inset = 0.72): Point {
+export function projectInsideEllipse(point: Point, ellipse: Ellipse, minimumRadiusRatio = 0.08): Point {
   const dx = point.x - ellipse.centerX;
   const dy = point.y - ellipse.centerY;
   if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) {
@@ -19,7 +19,12 @@ export function projectInsideEllipse(point: Point, ellipse: Ellipse, inset = 0.7
     (dy * dy) / (ellipse.radiusY * ellipse.radiusY),
   );
   const boundaryScale = denominator > 0 ? 1 / denominator : 0;
-  const scale = boundaryScale * Math.max(0, Math.min(1, inset));
+  const distanceFromCenter = Math.hypot(dx, dy);
+  const distanceToBoundary = distanceFromCenter * boundaryScale;
+  const distanceOutsidePond = Math.max(0, distanceFromCenter - distanceToBoundary);
+  const minimumDistance = distanceToBoundary * Math.max(0, Math.min(1, minimumRadiusRatio));
+  const reflectedDistance = Math.max(minimumDistance, distanceToBoundary - distanceOutsidePond);
+  const scale = distanceFromCenter > 0 ? reflectedDistance / distanceFromCenter : 0;
   return {
     x: ellipse.centerX + dx * scale,
     y: ellipse.centerY + dy * scale,

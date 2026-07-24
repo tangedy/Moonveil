@@ -35,21 +35,23 @@ describe('resolveWorldWrap', () => {
 describe('projectInsideEllipse', () => {
   const pond = { centerX: 350, centerY: 218, radiusX: 67, radiusY: 37 };
 
-  it('keeps the reflection on DREAMER’s side of each pond axis', () => {
-    expect(projectInsideEllipse({ x: 500, y: 218 }, pond)).toEqual({ x: 398.24, y: 218 });
-    expect(projectInsideEllipse({ x: 200, y: 218 }, pond)).toEqual({ x: 301.76, y: 218 });
-    expect(projectInsideEllipse({ x: 350, y: 100 }, pond)).toEqual({ x: 350, y: 191.36 });
-    expect(projectInsideEllipse({ x: 350, y: 330 }, pond)).toEqual({ x: 350, y: 244.64 });
+  it('mirrors a nearby player’s edge distance inside the pond', () => {
+    expect(projectInsideEllipse({ x: 427, y: 218 }, pond)).toEqual({ x: 407, y: 218 });
+    expect(projectInsideEllipse({ x: 273, y: 218 }, pond)).toEqual({ x: 293, y: 218 });
+    expect(projectInsideEllipse({ x: 350, y: 265 }, pond)).toEqual({ x: 350, y: 245 });
+    expect(projectInsideEllipse({ x: 350, y: 171 }, pond)).toEqual({ x: 350, y: 191 });
   });
 
-  it('projects diagonal positions inside the ellipse without reversing either axis', () => {
-    const projected = projectInsideEllipse({ x: 470, y: 300 }, pond);
-    expect(projected.x).toBeGreaterThan(pond.centerX);
-    expect(projected.y).toBeGreaterThan(pond.centerY);
-    const normalized =
-      ((projected.x - pond.centerX) ** 2) / (pond.radiusX ** 2) +
-      ((projected.y - pond.centerY) ** 2) / (pond.radiusY ** 2);
-    expect(normalized).toBeCloseTo(0.72 ** 2, 5);
+  it('pushes the reflection deeper as the player moves farther away without reversing sides', () => {
+    const near = projectInsideEllipse({ x: 427, y: 218 }, pond);
+    const far = projectInsideEllipse({ x: 500, y: 218 }, pond);
+    expect(far.x).toBeGreaterThan(pond.centerX);
+    expect(far.x).toBeLessThan(near.x);
+    expect(far.x).toBeCloseTo(355.36, 5);
+
+    const diagonal = projectInsideEllipse({ x: 470, y: 300 }, pond);
+    expect(diagonal.x).toBeGreaterThan(pond.centerX);
+    expect(diagonal.y).toBeGreaterThan(pond.centerY);
   });
 });
 

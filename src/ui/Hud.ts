@@ -7,8 +7,10 @@ export class Hud {
   private readonly root = this.getElement<HTMLElement>('hud');
   private readonly counter = this.getElement<HTMLElement>('step-counter');
   private readonly help = this.getElement<HTMLElement>('help');
+  private readonly message = this.getElement<HTMLElement>('hud-message');
   private readonly mute = this.getElement<HTMLButtonElement>('mute-toggle');
   private readonly motion = this.getElement<HTMLButtonElement>('motion-toggle');
+  private messageTimer: number | null = null;
 
   constructor(
     private readonly store: GameStateStore,
@@ -51,6 +53,19 @@ export class Hud {
 
   hideHelp(): void {
     this.help.classList.add('is-hidden');
+  }
+
+  showMessage(text: string, duration = 2600): void {
+    if (this.messageTimer !== null) window.clearTimeout(this.messageTimer);
+    this.message.textContent = text;
+    this.message.classList.remove('is-hidden', 'hud-message-showing');
+    void this.message.offsetWidth;
+    this.message.classList.add('hud-message-showing');
+    this.messageTimer = window.setTimeout(() => {
+      this.message.classList.add('is-hidden');
+      this.message.classList.remove('hud-message-showing');
+      this.messageTimer = null;
+    }, duration);
   }
 
   private getElement<T extends HTMLElement>(id: string): T {

@@ -20,6 +20,8 @@ export class DialogueOverlay {
   private readonly choices = this.getElement<HTMLElement>('dialogue-choices');
   private readonly continueMark = this.getElement<HTMLElement>('continue-mark');
   private typingTimer: number | null = null;
+  private transitionTimer: number | null = null;
+  private reducedMotion = false;
 
   constructor(private readonly onGlyph?: (speaker: string | undefined) => void) {}
 
@@ -30,7 +32,8 @@ export class DialogueOverlay {
     closeAfter = true,
   ): Promise<string | undefined> {
     this.cancelTyping();
-    this.root.classList.remove('is-hidden');
+    this.reducedMotion = preferences.reducedMotion;
+    this.open();
     this.speaker.textContent = page.speaker ?? '';
     this.text.textContent = '';
     this.choices.replaceChildren();
@@ -95,10 +98,13 @@ export class DialogueOverlay {
         this.cancelTyping();
         window.removeEventListener('keydown', onKeyDown, true);
         this.root.removeEventListener('click', onClick);
-        if (closeAfter) this.root.classList.add('is-hidden');
-        this.choices.replaceChildren();
-        this.root.classList.remove('has-choices');
-        resolve(result);
+        const finish = (): void => {
+          this.choices.replaceChildren();
+          this.root.classList.remove('has-choices');
+          resolve(result);
+        };
+        if (closeAfter) void this.hide().then(finish);
+        else finish();
       };
 
       const choose = (): void => {
@@ -140,11 +146,49 @@ export class DialogueOverlay {
     });
   }
 
-  hide(): void {
+  hide(immediate = false): Promise<void> {
     this.cancelTyping();
+    this.cancelTransition();
+    if (this.root.classList.contains('is-hidden')) return Promise.resolve();
+
+    if (immediate || this.reducedMotion) {
+      this.finishClose();
+      return Promise.resolve();
+    }
+
+    this.root.classList.remove('dialogue-opening');
+    this.root.classList.add('dialogue-closing');
+    return new Promise((resolve) => {
+      this.transitionTimer = window.setTimeout(() => {
+        this.transitionTimer = null;
+        this.finishClose();
+        resolve();
+      }, 190);
+    });
+  }
+
+  get isVisible(): boolean {
+    return !this.root.classList.contains('is-hidden');
+  }
+
+  private open(): void {
+    this.cancelTransition();
+    const wasHidden = this.root.classList.contains('is-hidden');
+    this.root.classList.remove('is-hidden', 'dialogue-closing', 'dialogue-opening');
+    if (wasHidden && !this.reducedMotion) this.root.classList.add('dialogue-opening');
+  }
+
+  private finishClose(): void {
     this.root.classList.add('is-hidden');
-    this.root.classList.remove('has-choices');
+    this.root.classList.remove('dialogue-opening', 'dialogue-closing', 'has-choices');
     this.choices.replaceChildren();
+  }
+
+  private cancelTransition(): void {
+    if (this.transitionTimer !== null) {
+      window.clearTimeout(this.transitionTimer);
+      this.transitionTimer = null;
+    }
   }
 
   private cancelTyping(): void {

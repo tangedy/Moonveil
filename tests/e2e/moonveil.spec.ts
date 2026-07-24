@@ -15,6 +15,10 @@ declare global {
           askedQuestions: string[];
           pathRevealed: boolean;
         };
+        garden: {
+          pondExamined: boolean;
+          starTaken: boolean;
+        };
         preferences: { muted: boolean; reducedMotion: boolean };
       };
       scene: () => string;
@@ -31,6 +35,31 @@ async function tapGameKey(page: Page, key: string): Promise<void> {
   await page.keyboard.down(key);
   await page.waitForTimeout(80);
   await page.keyboard.up(key);
+}
+
+async function continueInGarden(
+  page: Page,
+  position: { x: number; y: number },
+  facing: 'up' | 'down' | 'left' | 'right',
+): Promise<void> {
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Prologue');
+  await page.evaluate(({ position: nextPosition, facing: nextFacing }) => {
+    const state = window.__MOONVEIL__?.state();
+    if (!state) throw new Error('Moonveil state is unavailable');
+    const seeded = {
+      ...state,
+      currentScene: 'VioletGarden',
+      lastSafe: { scene: 'VioletGarden', position: nextPosition },
+      facing: nextFacing,
+      preferences: { ...state.preferences, reducedMotion: true },
+    };
+    localStorage.setItem('moonveil.save.v1', JSON.stringify({ schema: 2, savedAt: Date.now(), state: seeded }));
+  }, { position, facing });
+  await page.reload();
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('VioletGarden');
 }
 
 test.beforeEach(async ({ page }) => {
@@ -140,6 +169,59 @@ test('Moth questions stay under the active line and reveal the path', async ({ p
   await page.keyboard.press('Enter');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.state().prologue.pathRevealed)).toBe(true);
   await expect(dialogue).toBeHidden();
+});
+
+test('garden grass feedback and POCKET inventory behave like the demo', async ({ page }) => {
+  await continueInGarden(page, { x: 54, y: 302 }, 'down');
+
+  await tapGameKey(page, 'z');
+  await expect(page.locator('#hud-message')).toHaveText('Only the grass answers.');
+  await expect(page.locator('#hud-message')).toBeVisible();
+
+  const before = await page.evaluate(() => window.__MOONVEIL__?.view().player);
+  await page.keyboard.press('i');
+  await expect(page.locator('#inventory')).toBeVisible();
+  await expect(page.locator('.inventory-item-name')).toHaveText(['Soft Candy']);
+  await page.keyboard.down('ArrowRight');
+  await page.waitForTimeout(260);
+  await page.keyboard.up('ArrowRight');
+  expect(await page.evaluate(() => window.__MOONVEIL__?.view().player)).toMatchObject(before ?? {});
+  await page.keyboard.press('i');
+  await expect(page.locator('#inventory')).toBeHidden();
+});
+
+test('pond starts with the reflection line', async ({ page }) => {
+  await continueInGarden(page, { x: 350, y: 270 }, 'up');
+  await tapGameKey(page, 'z');
+  await expect(page.locator('#dialogue-text')).toHaveText('Your reflection blinks first.');
+  await expect(page.locator('#dialogue')).not.toContainText('The pond is perfectly still.');
+});
+
+test('Sleeping Star is taken without a choice and appears in POCKET', async ({ page }) => {
+  await continueInGarden(page, { x: 470, y: 268 }, 'right');
+  const dialogueText = page.locator('#dialogue-text');
+  await tapGameKey(page, 'z');
+  await expect(dialogueText).toHaveText('A tiny star is sleeping in the grass.');
+  await page.waitForTimeout(130);
+  await page.keyboard.press('Enter');
+  await expect(dialogueText).toHaveText('It hums when you hold it close.');
+  await expect(page.locator('.choice-button')).toHaveCount(0);
+  await page.waitForTimeout(130);
+  await page.keyboard.press('Enter');
+  await expect.poll(
+    () => page.evaluate(() => window.__MOONVEIL__?.state().garden.starTaken),
+    { timeout: 3_000 },
+  ).toBe(true);
+
+  await expect(dialogueText).toHaveText('SLEEPING STAR');
+  await page.waitForTimeout(130);
+  await page.keyboard.press('Enter');
+  await expect(dialogueText).toHaveText('It dreams of the sky.');
+  await page.waitForTimeout(130);
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('i');
+  await expect(page.locator('#inventory')).toBeVisible();
+  await expect(page.locator('.inventory-item-name')).toHaveText(['Soft Candy', 'Sleeping Star']);
 });
 
 test('preferences and progress persist in the single save slot', async ({ page }) => {

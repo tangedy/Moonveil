@@ -24,7 +24,18 @@
           <div id="dialogue-choices" class="dialogue-choices"></div>
           <span id="continue-mark" class="continue-mark" aria-hidden="true">◆</span>
         </section>
-        <div id="help" class="help is-hidden">MOVE · ARROWS / WASD&nbsp;&nbsp;&nbsp; SPRINT · SHIFT&nbsp;&nbsp;&nbsp; LOOK · Z / ENTER / SPACE</div>
+        <div id="help" class="help is-hidden">MOVE · ARROWS / WASD&nbsp;&nbsp;&nbsp; SPRINT · SHIFT&nbsp;&nbsp;&nbsp; LOOK · Z / ENTER / SPACE&nbsp;&nbsp;&nbsp; POCKET · I</div>
+        <div id="hud-message" class="hud-message is-hidden" role="status" aria-live="polite"></div>
+        <div id="inventory" class="inventory is-hidden" aria-hidden="true">
+          <section id="inventory-panel" class="inventory-panel" role="dialog" aria-modal="true" aria-labelledby="inventory-title">
+            <header class="inventory-header">
+              <h2 id="inventory-title">POCKET</h2>
+              <button id="inventory-close" class="inventory-close" type="button" aria-label="Close inventory">×</button>
+            </header>
+            <div id="inventory-items" class="inventory-items"></div>
+            <p class="inventory-hint">I / X / ESC · CLOSE</p>
+          </section>
+        </div>
       </div>
       <p class="outside-note">Best experienced with sound. Progress saves in this browser.</p>
     </main>

@@ -31,7 +31,6 @@ export const gardenDialogue = {
     { speaker: 'Sprout', text: 'Have we become acquaintances retroactively?' },
   ] satisfies DialoguePage[],
   pondFirst: [
-    { text: 'The pond is perfectly still.' },
     { text: 'Your reflection blinks first.' },
     { text: 'You decide not to mention it.' },
   ] satisfies DialoguePage[],

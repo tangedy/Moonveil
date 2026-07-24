@@ -106,6 +106,15 @@ button { font: inherit; }
   box-shadow: 5px 5px 0 rgba(59, 34, 88, 0.95), 0 0 0 1px #000;
 }
 
+.dialogue-opening {
+  animation: dialogue-rise 240ms cubic-bezier(0.22, 0.8, 0.28, 1) both;
+}
+
+.dialogue-closing {
+  pointer-events: none;
+  animation: dialogue-sink 190ms cubic-bezier(0.55, 0, 1, 0.45) both;
+}
+
 .speaker {
   min-height: 1.1em;
   margin: 0 0 0.55em;
@@ -181,6 +190,126 @@ button { font: inherit; }
   animation: help-fade 7s forwards;
 }
 
+.hud-message {
+  position: absolute;
+  z-index: 5;
+  top: 6.5%;
+  left: 50%;
+  translate: -50% 0;
+  border: 2px solid var(--paper);
+  padding: 5px 10px;
+  color: var(--paper);
+  background: rgba(8, 5, 13, 0.96);
+  box-shadow: 3px 3px 0 rgba(59, 34, 88, 0.95);
+  font-size: clamp(8px, 1.2vw, 13px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.hud-message-showing { animation: hud-message-life 2600ms ease both; }
+
+.inventory {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 5%;
+  background: rgba(0, 0, 0, 0.86);
+}
+
+.inventory-panel {
+  width: min(430px, 86%);
+  border: 3px solid var(--paper);
+  padding: clamp(14px, 2.4vw, 24px);
+  color: var(--paper);
+  background: #1d102b;
+  box-shadow: 7px 7px 0 #6d3fa2;
+}
+
+.inventory-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  border-bottom: 2px solid #8d5bc9;
+  padding-bottom: 9px;
+}
+
+.inventory-header h2 {
+  margin: 0;
+  font-family: 'Quicksand', sans-serif;
+  font-size: clamp(15px, 2.4vw, 24px);
+  letter-spacing: 0.18em;
+}
+
+.inventory-close {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  padding: 0;
+  color: var(--paper);
+  background: transparent;
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.inventory-close:hover, .inventory-close:focus-visible {
+  color: var(--ink);
+  background: var(--paper);
+  outline: none;
+}
+
+.inventory-items { display: grid; gap: 8px; }
+
+.inventory-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 2px solid #8d5bc9;
+  padding: 10px;
+  background: #08050d;
+}
+
+.inventory-item-icon {
+  display: grid;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+.inventory-item-name {
+  font-family: 'Quicksand', sans-serif;
+  font-size: clamp(11px, 1.7vw, 16px);
+  font-weight: 650;
+}
+
+.inventory-item-description {
+  margin-top: 3px;
+  color: #c9a7f2;
+  font-size: clamp(7px, 1.05vw, 11px);
+  line-height: 1.35;
+}
+
+.inventory-hint {
+  margin: 12px 0 0;
+  color: rgba(255, 250, 242, 0.45);
+  text-align: right;
+  font-size: clamp(6px, 0.9vw, 9px);
+  letter-spacing: 0.12em;
+}
+
+.inventory-opening { animation: inventory-backdrop-in 180ms ease both; }
+.inventory-opening .inventory-panel { animation: inventory-panel-in 220ms cubic-bezier(0.22, 0.8, 0.28, 1) both; }
+.inventory-closing { pointer-events: none; animation: inventory-backdrop-out 180ms ease both; }
+.inventory-closing .inventory-panel { animation: inventory-panel-out 180ms ease both; }
+
 .outside-note {
   margin: 9px 0 0;
   color: rgba(255, 250, 242, 0.35);
@@ -193,6 +322,29 @@ button { font: inherit; }
 
 @keyframes drift { 50% { transform: translateY(3px); } }
 @keyframes help-fade { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes dialogue-rise {
+  from { opacity: 0; transform: translateY(calc(100% + 32px)); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes dialogue-sink {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(calc(100% + 32px)); }
+}
+@keyframes hud-message-life {
+  0% { opacity: 0; transform: translateY(-8px); }
+  7%, 84% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-3px); }
+}
+@keyframes inventory-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes inventory-backdrop-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes inventory-panel-in {
+  from { opacity: 0; transform: translateY(15px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes inventory-panel-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(8px) scale(0.9); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }

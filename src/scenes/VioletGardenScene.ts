@@ -5,8 +5,10 @@ import { AudioCue, PALETTE, SceneId, TextureKey } from '../game/config';
 import {
   assetRegistry,
   audioManager,
+  dialogueOverlay,
   dialogueSystem,
   hud,
+  inventoryOverlay,
   saveService,
   stateStore,
 } from '../game/services';
@@ -67,6 +69,11 @@ export class VioletGardenScene extends Phaser.Scene {
     this.physics.add.collider(this.dreamer, this.colliders);
     this.cameras.main.startFollow(this.dreamer, true, 0.09, 0.09);
     this.cameras.main.setRoundPixels(true);
+    inventoryOverlay.attach({
+      canOpen: () => !dialogueOverlay.isVisible && !this.transitioning,
+      onVisibilityChange: (open) => this.dreamer.setInputLocked(open),
+    });
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => inventoryOverlay.detach());
 
     this.registerInteractions();
     this.syncConsequenceState();
@@ -79,7 +86,7 @@ export class VioletGardenScene extends Phaser.Scene {
     this.dreamer.update(delta);
 
     if (this.dreamer.consumeInteract()) {
-      void this.interactions.tryInteract(this.dreamer, this.dreamer.facingDirection);
+      void this.tryInteraction();
     }
 
     this.updateFlowers();
@@ -231,6 +238,11 @@ export class VioletGardenScene extends Phaser.Scene {
     });
   }
 
+  private async tryInteraction(): Promise<void> {
+    const found = await this.interactions.tryInteract(this.dreamer, this.dreamer.facingDirection);
+    if (!found) hud.showMessage('Only the grass answers.');
+  }
+
   private async talkToMoth(): Promise<void> {
     const garden = stateStore.snapshot.garden;
     const pages = garden.starTaken ? gardenDialogue.mothAfter : garden.mothSpoken ? gardenDialogue.mothRepeat : gardenDialogue.mothBefore;
@@ -267,18 +279,7 @@ export class VioletGardenScene extends Phaser.Scene {
   private async inspectStar(): Promise<void> {
     if (stateStore.snapshot.garden.starTaken || this.transitioning) return;
     stateStore.markGardenInteraction('star-discovered');
-    const choice = await dialogueSystem.run(
-      gardenDialogue.star,
-      (locked) => this.dreamer.setInputLocked(locked),
-      [
-        { id: 'hold', label: 'Hold it close.' },
-        { id: 'leave', label: 'Let it sleep.' },
-      ],
-    );
-    if (choice !== 'hold') {
-      this.checkpoint();
-      return;
-    }
+    await dialogueSystem.run(gardenDialogue.star, (locked) => this.dreamer.setInputLocked(locked));
     await this.resolveStarConsequence();
   }
 
