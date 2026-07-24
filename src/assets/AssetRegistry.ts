@@ -45,74 +45,56 @@ export class AssetRegistry {
   }
 
   private generateDreamer(scene: Phaser.Scene): void {
-    const directions = ['down', 'up', 'left', 'right'] as const;
-    directions.forEach((direction) => {
-      [0, 1].forEach((frame) => {
-        const key = `dreamer-${direction}-${frame}`;
-        if (scene.textures.exists(key)) return;
-        const g = graphics(scene);
-        const bob = frame === 0 ? 0 : 1;
+    const frames: Array<{ key: string; bob: number; stride: boolean }> = [
+      { key: TextureKey.DreamerStand, bob: 0, stride: false },
+      { key: TextureKey.DreamerWalk0, bob: 0, stride: true },
+      { key: TextureKey.DreamerWalk1, bob: 1, stride: true },
+    ];
 
-        g.fillStyle(PALETTE.violetDark, 0.65);
-        g.fillEllipse(8, 19, frame === 0 ? 10 : 8, 2);
+    frames.forEach(({ key, bob, stride }) => {
+      if (scene.textures.exists(key)) return;
+      const g = graphics(scene);
 
-        g.fillStyle(PALETTE.black);
-        if (frame === 0) {
-          g.fillRect(4, 15 + bob, 3, 4);
-          g.fillRect(9, 15 + bob, 3, 4);
-        } else {
-          g.fillRect(3, 16, 4, 3);
-          g.fillRect(10, 15, 3, 4);
-        }
+      g.fillStyle(PALETTE.violetDark, 0.65);
+      g.fillEllipse(8, 19, stride && bob === 1 ? 8 : 10, 2);
 
-        g.fillStyle(PALETTE.black);
-        g.fillRoundedRect(3, 8 + bob, 10, 9, 2);
-        g.fillStyle(PALETTE.paper);
-        g.fillRoundedRect(4, 9 + bob, 8, 7, 1);
-        g.fillStyle(PALETTE.violetLight, 0.55);
-        if (direction === 'left') g.fillRect(4, 10 + bob, 2, 5);
-        else if (direction === 'right') g.fillRect(10, 10 + bob, 2, 5);
-        else g.fillRect(5, 14 + bob, 6, 1);
+      g.fillStyle(PALETTE.black);
+      if (!stride || bob === 0) {
+        g.fillRect(4, 15 + bob, 3, 4);
+        g.fillRect(9, 15 + bob, 3, 4);
+      } else {
+        g.fillRect(3, 16, 4, 3);
+        g.fillRect(10, 15, 3, 4);
+      }
 
-        g.fillStyle(PALETTE.black);
-        g.fillCircle(8, 5 + bob, 5);
-        g.fillStyle(PALETTE.paper);
-        g.fillCircle(8, 6 + bob, 3);
-        g.fillStyle(PALETTE.black);
-        g.fillCircle(8, 4 + bob, 4);
+      g.fillStyle(PALETTE.black);
+      g.fillRoundedRect(3, 8 + bob, 10, 9, 2);
+      g.fillStyle(PALETTE.paper);
+      g.fillRoundedRect(4, 9 + bob, 8, 7, 1);
+      g.fillStyle(PALETTE.violetLight, 0.55);
+      g.fillRect(5, 14 + bob, 6, 1);
 
-        if (direction === 'down') {
-          g.fillRect(4, 4 + bob, 8, 3);
-          g.fillRect(5, 7 + bob, 3, 2);
-          g.fillRect(9, 6 + bob, 2, 2);
-          g.fillStyle(PALETTE.violetDark);
-          g.fillRect(4, 4 + bob, 2, 3);
-        } else if (direction === 'up') {
-          g.fillCircle(8, 6 + bob, 4);
-          g.fillStyle(PALETTE.violetDark);
-          g.fillRect(5, 3 + bob, 2, 3);
-        } else if (direction === 'left') {
-          g.fillRect(3, 4 + bob, 7, 5);
-          g.fillRect(9, 3 + bob, 2, 3);
-          g.fillStyle(PALETTE.violetDark);
-          g.fillRect(3, 5 + bob, 2, 3);
-        } else if (direction === 'right') {
-          g.fillRect(6, 4 + bob, 7, 5);
-          g.fillRect(5, 3 + bob, 2, 3);
-          g.fillStyle(PALETTE.violetDark);
-          g.fillRect(11, 5 + bob, 2, 3);
-        }
+      g.fillStyle(PALETTE.black);
+      g.fillCircle(8, 5 + bob, 5);
+      g.fillStyle(PALETTE.paper);
+      g.fillCircle(8, 6 + bob, 3);
+      g.fillStyle(PALETTE.black);
+      g.fillCircle(8, 4 + bob, 4);
+      g.fillRect(4, 4 + bob, 8, 3);
+      g.fillRect(5, 7 + bob, 3, 2);
+      g.fillRect(9, 6 + bob, 2, 2);
+      g.fillStyle(PALETTE.violetDark);
+      g.fillRect(4, 4 + bob, 2, 3);
 
-        g.fillStyle(PALETTE.paper);
-        if (frame === 0) {
-          g.fillRect(4, 18, 3, 1);
-          g.fillRect(9, 18, 3, 1);
-        } else {
-          g.fillRect(3, 18, 4, 1);
-          g.fillRect(10, 18, 3, 1);
-        }
-        finish(g, key, 16, 20);
-      });
+      g.fillStyle(PALETTE.paper);
+      if (!stride || bob === 0) {
+        g.fillRect(4, 18, 3, 1);
+        g.fillRect(9, 18, 3, 1);
+      } else {
+        g.fillRect(3, 18, 4, 1);
+        g.fillRect(10, 18, 3, 1);
+      }
+      finish(g, key, 16, 20);
     });
   }
 

@@ -1,4 +1,8 @@
 {
-  "images": {},
+  "images": {
+    "dreamer-stand": "assets/dreamer/stand-front.png",
+    "dreamer-walk-0": "assets/dreamer/walk-1.png",
+    "dreamer-walk-1": "assets/dreamer/walk-2.png"
+  },
   "audio": {}
 }

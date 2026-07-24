@@ -176,7 +176,7 @@ export class VioletGardenScene extends Phaser.Scene {
     this.reflection = this.add.image(
       POND.centerX,
       POND.centerY,
-      assetRegistry.resolve(this, TextureKey.DreamerDown0),
+      assetRegistry.resolve(this, TextureKey.DreamerStand),
     )
       .setDepth(4)
       .setAlpha(0.52)
@@ -352,12 +352,10 @@ export class VioletGardenScene extends Phaser.Scene {
     this.reflection.x = Phaser.Math.Linear(this.reflection.x, projected.x, 0.12);
     this.reflection.y = Phaser.Math.Linear(this.reflection.y, projected.y, 0.12);
 
-    const walkFrame = this.dreamer.texture.key.endsWith('-1') ? 1 : 0;
-    const downKey = walkFrame === 1 ? TextureKey.DreamerDown1 : TextureKey.DreamerDown0;
-    const resolved = assetRegistry.resolve(this, downKey);
-    if (this.reflection.texture.key !== resolved) {
-      this.reflection.setTexture(resolved);
+    if (this.reflection.texture.key !== this.dreamer.texture.key) {
+      this.reflection.setTexture(this.dreamer.texture.key);
     }
+    this.reflection.setFlipX(this.dreamer.flipX);
 
     const targetRotation = reflectionFeetRotation(this.reflection, this.dreamer);
     this.reflection.rotation = Phaser.Math.Angle.RotateTo(this.reflection.rotation, targetRotation, 0.18);

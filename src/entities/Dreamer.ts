@@ -31,7 +31,7 @@ export class Dreamer extends Phaser.Physics.Arcade.Sprite {
     private readonly assets: AssetRegistry,
     collideWorldBounds = true,
   ) {
-    super(scene, x, y, assets.resolve(scene, TextureKey.DreamerUp0));
+    super(scene, x, y, assets.resolve(scene, TextureKey.DreamerStand));
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
@@ -148,15 +148,19 @@ export class Dreamer extends Phaser.Physics.Arcade.Sprite {
   }
 
   private applyTexture(walking: boolean, frame: number): void {
-    const actualFrame = walking ? frame : 0;
-    const keys: Record<FacingDirection, [string, string]> = {
-      [Facing.Down]: [TextureKey.DreamerDown0, TextureKey.DreamerDown1],
-      [Facing.Up]: [TextureKey.DreamerUp0, TextureKey.DreamerUp1],
-      [Facing.Left]: [TextureKey.DreamerLeft0, TextureKey.DreamerLeft1],
-      [Facing.Right]: [TextureKey.DreamerRight0, TextureKey.DreamerRight1],
-    };
-    const key = keys[this.facing][actualFrame] ?? keys[this.facing][0];
+    const key = walking
+      ? frame === 0
+        ? TextureKey.DreamerWalk0
+        : TextureKey.DreamerWalk1
+      : TextureKey.DreamerStand;
     const resolved = this.assets.resolve(this.scene, key);
     if (this.texture.key !== resolved) this.setTexture(resolved);
+    this.setFlipX(this.facing === Facing.Left);
+
+    const body = this.body as Phaser.Physics.Arcade.Body;
+    const width = this.frame.width;
+    const height = this.frame.height;
+    body.setSize(MOVEMENT.bodyWidth, MOVEMENT.bodyHeight);
+    body.setOffset((width - MOVEMENT.bodyWidth) / 2, height - MOVEMENT.bodyHeight - 2);
   }
 }

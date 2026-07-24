@@ -28,10 +28,10 @@ export const PALETTE = {
 export const MOVEMENT = {
   speed: 72,
   sprintSpeed: 118,
-  bodyWidth: 8,
-  bodyHeight: 7,
-  bodyOffsetX: 4,
-  bodyOffsetY: 12,
+  bodyWidth: 10,
+  bodyHeight: 8,
+  bodyOffsetX: 6,
+  bodyOffsetY: 22,
   interactionRange: 27,
   strideLength: 10,
 } as const;
@@ -59,14 +59,9 @@ export const Facing = {
 export type Facing = (typeof Facing)[keyof typeof Facing];
 
 export const TextureKey = {
-  DreamerDown0: 'dreamer-down-0',
-  DreamerDown1: 'dreamer-down-1',
-  DreamerUp0: 'dreamer-up-0',
-  DreamerUp1: 'dreamer-up-1',
-  DreamerLeft0: 'dreamer-left-0',
-  DreamerLeft1: 'dreamer-left-1',
-  DreamerRight0: 'dreamer-right-0',
-  DreamerRight1: 'dreamer-right-1',
+  DreamerStand: 'dreamer-stand',
+  DreamerWalk0: 'dreamer-walk-0',
+  DreamerWalk1: 'dreamer-walk-1',
   Chair: 'chair',
   Flower: 'flower',
   FlowerWhite: 'flower-white',
