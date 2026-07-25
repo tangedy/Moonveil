@@ -23,15 +23,25 @@ export const mothGreeting: DialoguePage[] = [
 export const mothQuestions: Record<MothQuestion, { label: string; answer: DialoguePage[] }> = {
   where: {
     label: 'Where is this?',
-    answer: [{ speaker: 'Moth', text: 'Somewhere that misses you.' }],
+    answer: [
+      { speaker: 'Moth', text: 'Somewhere that misses you.' },
+      { speaker: 'DREAMER', text: "That isn't a place." },
+      { speaker: 'Moth', text: "Most places aren't, until someone misses them." },
+    ],
   },
   moth: {
     label: 'Who are you?',
-    answer: [{ speaker: 'Moth', text: 'I was hoping you knew.' }],
+    answer: [
+      { speaker: 'Moth', text: 'I was hoping you knew.' },
+      { speaker: 'Moth', text: 'It would have saved us both an introduction.' },
+    ],
   },
   self: {
     label: 'Who am I?',
-    answer: [{ speaker: 'Moth', text: 'Careful. Something might hear you.' }],
+    answer: [
+      { speaker: 'Moth', text: 'Careful.' },
+      { speaker: 'Moth', text: 'Something might hear you.' },
+    ],
   },
 };
 

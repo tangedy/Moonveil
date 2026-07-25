@@ -262,14 +262,31 @@ test('Moth questions stay under the active line and reveal the path', async ({ p
   await page.waitForTimeout(130);
   await page.getByRole('button', { name: 'Where is this?' }).click();
   await expect(dialogueText).toHaveText('Somewhere that misses you.');
+  await expect(choices).toHaveCount(0);
+  await page.waitForTimeout(130);
+  await page.keyboard.press('Enter');
+  await expect(dialogueText).toHaveText("That isn't a place.");
+  await page.waitForTimeout(130);
+  await page.keyboard.press('Enter');
+  await expect(dialogueText).toHaveText("Most places aren't, until someone misses them.");
   await expect(choices).toHaveCount(2);
+
   await page.waitForTimeout(130);
   await page.getByRole('button', { name: 'Who are you?' }).click();
   await expect(dialogueText).toHaveText('I was hoping you knew.');
+  await expect(choices).toHaveCount(0);
+  await page.waitForTimeout(130);
+  await page.keyboard.press('Enter');
+  await expect(dialogueText).toHaveText('It would have saved us both an introduction.');
   await expect(choices).toHaveCount(1);
+
   await page.waitForTimeout(130);
   await page.getByRole('button', { name: 'Who am I?' }).click();
-  await expect(dialogueText).toHaveText('Careful. Something might hear you.');
+  await expect(dialogueText).toHaveText('Careful.');
+  await expect(choices).toHaveCount(0);
+  await page.waitForTimeout(130);
+  await page.keyboard.press('Enter');
+  await expect(dialogueText).toHaveText('Something might hear you.');
   await expect(choices).toHaveCount(0);
 
   for (const line of ['Oh.', 'It heard the shape of the question.']) {

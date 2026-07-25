@@ -98,12 +98,14 @@ button { font: inherit; }
   left: 5%;
   right: 5%;
   bottom: 5%;
-  min-height: 28%;
+  min-height: 22%;
   padding: clamp(14px, 2.2vw, 24px) clamp(18px, 3vw, 34px);
   color: var(--paper);
   background: rgba(8, 5, 13, 0.95);
   border: 2px solid var(--paper);
   box-shadow: 5px 5px 0 rgba(59, 34, 88, 0.95), 0 0 0 1px #000;
+  pointer-events: auto;
+  overflow: visible;
 }
 
 .dialogue-opening {
@@ -137,34 +139,67 @@ button { font: inherit; }
 }
 
 .dialogue-choices {
-  display: grid;
-  gap: 2px;
-  margin-top: 8px;
+  position: absolute;
+  right: -2px;
+  bottom: calc(100% - 2px);
+  z-index: 1;
+  display: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+  margin: 0;
+  background: transparent;
+  box-shadow: none;
+  border: 0;
+}
+
+.dialogue.has-choices .dialogue-choices {
+  display: flex;
 }
 
 .choice-button {
-  width: 100%;
-  border: 0;
-  padding: 2px 4px 2px 1.4em;
-  color: rgba(255, 250, 242, 0.72);
-  text-align: left;
-  background: transparent;
+  width: max-content;
+  max-width: min(70vw, 420px);
+  border: 2px solid var(--paper);
+  margin-top: -2px;
+  padding: 0.45em 0.85em 0.45em 1.55em;
+  color: #8f78b0;
+  text-align: right;
+  background: rgba(8, 5, 13, 0.98);
+  box-shadow: 4px 4px 0 rgba(59, 34, 88, 0.85), 0 0 0 1px #000;
   cursor: pointer;
   font-family: 'Quicksand', sans-serif;
   font-size: clamp(11px, 1.55vw, 17px);
   line-height: 1.3;
   position: relative;
+  white-space: nowrap;
+}
+
+.choice-button:first-child {
+  margin-top: 0;
 }
 
 .choice-button::before {
   content: '';
   position: absolute;
-  left: 0.25em;
-  color: #c9a7f2;
+  left: 0.45em;
+  color: var(--paper);
 }
-.choice-button[aria-selected='true'] { color: var(--paper); }
-.choice-button[aria-selected='true']::before { content: '›'; }
-.choice-button:hover, .choice-button:focus-visible { color: #dbc7f5; outline: none; }
+
+.choice-button[aria-selected='true'] {
+  color: var(--paper);
+  background: rgba(8, 5, 13, 0.98);
+}
+
+.choice-button[aria-selected='true']::before {
+  content: '>';
+}
+
+.choice-button:hover,
+.choice-button:focus-visible {
+  color: #dbc7f5;
+  outline: none;
+}
 
 .continue-mark {
   position: absolute;
