@@ -109,6 +109,7 @@ export const AudioCue = {
   Path: 'path',
   StarHum: 'star-hum',
   StarTake: 'star-take',
+  Menu: 'menu',
   Garden: 'garden',
   House: 'house',
   PassageMemory: 'passage-memory',

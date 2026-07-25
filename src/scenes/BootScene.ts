@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { AssetManifest } from '../assets/AssetRegistry';
-import { PALETTE, SceneId } from '../game/config';
+import menuThemeUrl from '../audio/music/as the moon gazes down upon your weary eyes - keys (128k).mp3';
+import { AudioCue, PALETTE, SceneId } from '../game/config';
 import { assetRegistry } from '../game/services';
 
 export class BootScene extends Phaser.Scene {
@@ -10,6 +11,7 @@ export class BootScene extends Phaser.Scene {
 
   preload(): void {
     this.load.json('asset-manifest', 'assets/manifest.json');
+    this.load.audio(`override-audio:${AudioCue.Menu}`, menuThemeUrl);
   }
 
   create(): void {

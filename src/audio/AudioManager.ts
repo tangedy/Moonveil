@@ -34,6 +34,7 @@ export class AudioManager {
   private ambienceNodes: OscillatorNode[] = [];
   private ambienceGains: GainNode[] = [];
   private ambienceTargets: number[] = [];
+  private menuSound: VolumeSound | null = null;
   private gardenSound: VolumeSound | null = null;
   private houseSound: VolumeSound | null = null;
   private starSound: VolumeSound | null = null;
@@ -56,6 +57,7 @@ export class AudioManager {
     this.ambienceGains.forEach((gain, index) => {
       gain.gain.setTargetAtTime(muted ? 0 : (this.ambienceTargets[index] ?? 0.003), gain.context.currentTime, 0.08);
     });
+    this.menuSound?.setVolume(muted ? 0 : 0.38);
     this.gardenSound?.setVolume(muted ? 0 : 0.16);
     this.houseSound?.setVolume(muted ? 0 : 0.14);
     this.starSound?.setVolume(muted ? 0 : this.starVolume);
@@ -98,6 +100,15 @@ export class AudioManager {
           ? AudioCue.DialogueKeeper
           : AudioCue.DialogueWorld;
     this.cue(cue);
+  }
+
+  startMenuMusic(): void {
+    const overrideKey = `override-audio:${AudioCue.Menu}`;
+    if (!this.scene?.cache.audio.exists(overrideKey)) return;
+    if (this.menuSound?.isPlaying) return;
+    this.stopAmbience();
+    this.menuSound = this.scene.sound.add(overrideKey, { loop: true, volume: this.muted ? 0 : 0.38 }) as VolumeSound;
+    this.menuSound.play();
   }
 
   startGardenAmbience(): void {
@@ -184,6 +195,9 @@ export class AudioManager {
   }
 
   stopAmbience(): void {
+    this.menuSound?.stop();
+    this.menuSound?.destroy();
+    this.menuSound = null;
     this.gardenSound?.stop();
     this.gardenSound?.destroy();
     this.gardenSound = null;

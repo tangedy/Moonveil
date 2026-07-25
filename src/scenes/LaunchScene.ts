@@ -16,6 +16,11 @@ export class LaunchScene extends Phaser.Scene {
     void dialogueOverlay.hide(true);
     audioManager.attach(this);
     audioManager.stopAmbience();
+    const savedPreferences = saveService.load()?.preferences;
+    if (savedPreferences) audioManager.setMuted(savedPreferences.muted);
+    void this.ensureMenuMusic();
+    this.input.once('pointerdown', () => void this.ensureMenuMusic());
+    this.input.keyboard?.once('keydown', () => void this.ensureMenuMusic());
     this.cameras.main.setBackgroundColor(PALETTE.ink);
 
     const motes = this.add.group();
@@ -48,7 +53,7 @@ export class LaunchScene extends Phaser.Scene {
       color: '#fffaf2',
       letterSpacing: 4,
     }).setOrigin(0.5);
-    this.add.text(160, 93, 'a small dream about recognition', {
+    this.add.text(160, 93, 'a small dream', {
       fontFamily: 'monospace',
       fontSize: '6px',
       color: '#8d5bc9',
@@ -92,10 +97,15 @@ export class LaunchScene extends Phaser.Scene {
     return button;
   }
 
+  private async ensureMenuMusic(): Promise<void> {
+    await audioManager.unlock();
+    audioManager.startMenuMusic();
+  }
+
   private async begin(action: () => Promise<void> | void): Promise<void> {
     if (this.starting) return;
     this.starting = true;
-    await audioManager.unlock();
+    await this.ensureMenuMusic();
     await action();
   }
 }
