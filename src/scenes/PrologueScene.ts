@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { chairFirst, chairFlower, chairTurned, mothGreeting, mothQuestions, pathAppears } from '../content/prologue';
 import { Dreamer } from '../entities/Dreamer';
-import { AudioCue, PALETTE, PROLOGUE_GEOMETRY, SceneId, TextureKey } from '../game/config';
+import { AudioCue, GAME_HEIGHT, GAME_WIDTH, PALETTE, PROLOGUE_GEOMETRY, SceneId, TextureKey } from '../game/config';
 import {
   assetRegistry,
   audioManager,
@@ -13,11 +13,16 @@ import {
   stateStore,
 } from '../game/services';
 import type { MothQuestion } from '../state/GameState';
+import { playCameraIntro } from '../systems/CameraIntro';
 import { InteractionSystem } from '../systems/InteractionSystem';
 import { resolveWorldWrap } from '../systems/WorldWrap';
 
 const roomX = (x: number): number => x + PROLOGUE_GEOMETRY.roomOffsetX;
 const roomY = (y: number): number => y + PROLOGUE_GEOMETRY.roomOffsetY;
+const wrapLeft = PROLOGUE_GEOMETRY.wrapLeft;
+const wrapTop = -PROLOGUE_GEOMETRY.wrapPaddingY;
+const maxWrapWidth = PROLOGUE_GEOMETRY.pathWrapRight - wrapLeft;
+const wrapHeight = PROLOGUE_GEOMETRY.worldHeight + PROLOGUE_GEOMETRY.wrapPaddingY * 2;
 
 export class PrologueScene extends Phaser.Scene {
   private dreamer!: Dreamer;
@@ -33,11 +38,18 @@ export class PrologueScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.transitioning = false;
+    this.transitioning = true;
     this.interactions.clear();
+    this.flower = null;
+    this.moth = null;
     this.cameras.main.setBackgroundColor(PALETTE.black);
-    this.physics.world.setBounds(0, 0, PROLOGUE_GEOMETRY.worldWidth, PROLOGUE_GEOMETRY.worldHeight);
-    this.cameras.main.setBounds(0, 0, PROLOGUE_GEOMETRY.worldWidth, PROLOGUE_GEOMETRY.worldHeight);
+    this.physics.world.setBounds(wrapLeft, wrapTop, maxWrapWidth, wrapHeight);
+    this.cameras.main.setBounds(
+      wrapLeft - GAME_WIDTH,
+      wrapTop - GAME_HEIGHT,
+      maxWrapWidth + GAME_WIDTH * 2,
+      wrapHeight + GAME_HEIGHT * 2,
+    );
     audioManager.attach(this);
     audioManager.stopAmbience();
     audioManager.setMuted(stateStore.snapshot.preferences.muted);
@@ -56,14 +68,19 @@ export class PrologueScene extends Phaser.Scene {
     this.chair = this.add.image(roomX(160), roomY(80), assetRegistry.resolve(this, TextureKey.Chair)).setDepth(10);
     this.physics.add.existing(this.chair, true);
 
-    const start = stateStore.snapshot.lastSafe.scene === SceneId.Prologue
+    const savedStart = stateStore.snapshot.lastSafe.scene === SceneId.Prologue
       ? stateStore.snapshot.lastSafe.position
       : { x: PROLOGUE_GEOMETRY.spawnX, y: PROLOGUE_GEOMETRY.spawnY };
+    const normalizedStart = resolveWorldWrap(savedStart, {
+      left: wrapLeft,
+      top: wrapTop,
+      width: this.wrapWidth,
+      height: wrapHeight,
+    });
+    const start = normalizedStart?.position ?? savedStart;
     this.dreamer = new Dreamer(this, start.x, start.y, stateStore, audioManager, assetRegistry, false);
     this.physics.add.collider(this.dreamer, this.chair);
-    this.cameras.main.startFollow(this.dreamer, true, 0.09, 0.09);
-    this.cameras.main.setRoundPixels(true);
-    this.cameras.main.centerOn(this.dreamer.x, this.dreamer.y);
+    this.dreamer.setInputLocked(true);
     inventoryOverlay.attach({
       canOpen: () => !dialogueOverlay.isVisible && !this.transitioning,
       onVisibilityChange: (open) => this.dreamer.setInputLocked(open),
@@ -80,6 +97,20 @@ export class PrologueScene extends Phaser.Scene {
     });
 
     this.syncWorld(false);
+    playCameraIntro({
+      scene: this,
+      camera: this.cameras.main,
+      target: this.dreamer,
+      worldX: wrapLeft,
+      worldY: wrapTop,
+      worldWidth: this.wrapWidth,
+      worldHeight: wrapHeight,
+      reducedMotion: stateStore.snapshot.preferences.reducedMotion,
+      onComplete: () => {
+        this.transitioning = false;
+        this.dreamer.setInputLocked(false);
+      },
+    });
   }
 
   update(_time: number, delta: number): void {
@@ -104,18 +135,25 @@ export class PrologueScene extends Phaser.Scene {
     }
 
     const wrap = resolveWorldWrap(this.dreamer, {
-      width: PROLOGUE_GEOMETRY.worldWidth,
-      height: PROLOGUE_GEOMETRY.worldHeight,
-      margin: PROLOGUE_GEOMETRY.wrapMargin,
-      inset: PROLOGUE_GEOMETRY.wrapInset,
+      left: wrapLeft,
+      top: wrapTop,
+      width: this.wrapWidth,
+      height: wrapHeight,
     });
-    if (wrap) this.performLoop(wrap.position.x, wrap.position.y);
+    if (wrap) this.performLoop(wrap.position.x, wrap.position.y, wrap.delta.x, wrap.delta.y);
   }
 
   private async inspectChair(): Promise<void> {
     const prologue = stateStore.snapshot.prologue;
     const pages = prologue.chairTurned ? chairTurned : prologue.flowerRevealed ? chairFlower : chairFirst;
     await dialogueSystem.run(pages, (locked) => this.dreamer.setInputLocked(locked));
+  }
+
+  private get wrapWidth(): number {
+    const right = stateStore.snapshot.prologue.pathRevealed
+      ? PROLOGUE_GEOMETRY.pathWrapRight
+      : PROLOGUE_GEOMETRY.wrapRight;
+    return right - wrapLeft;
   }
 
   private async inspectMoth(): Promise<void> {
@@ -167,11 +205,14 @@ export class PrologueScene extends Phaser.Scene {
     });
   }
 
-  private performLoop(x: number, y: number): void {
+  private performLoop(x: number, y: number, deltaX: number, deltaY: number): void {
     if (this.transitioning) return;
     const previousLoop = stateStore.snapshot.prologue.loopCount;
     this.dreamer.teleport(x, y, true);
-    this.cameras.main.centerOn(x, y);
+    this.cameras.main.setScroll(
+      this.cameras.main.scrollX + deltaX,
+      this.cameras.main.scrollY + deltaY,
+    );
     const nextLoop = stateStore.advancePrologueLoop();
     audioManager.cue(AudioCue.Loop);
     if (nextLoop > previousLoop) this.syncWorld(true);
@@ -184,8 +225,9 @@ export class PrologueScene extends Phaser.Scene {
     this.chair.setAngle(prologue.chairTurned ? 6 : 0);
 
     if (prologue.flowerRevealed && !this.flower) {
-      this.flower = this.add.image(roomX(181), roomY(89), assetRegistry.resolve(this, TextureKey.Flower)).setDepth(9);
-      this.flower.setAlpha(animate ? 0 : 1);
+      this.flower = this.add.image(roomX(181), roomY(89), assetRegistry.resolve(this, TextureKey.Flower))
+        .setDepth(9)
+        .setAlpha(animate ? 0 : 1);
       if (animate) this.tweens.add({ targets: this.flower, alpha: 1, duration: 600 });
       this.interactions.add({
         id: 'prologue-flower',
@@ -203,9 +245,14 @@ export class PrologueScene extends Phaser.Scene {
     }
 
     if (prologue.mothAppeared && !this.moth) {
-      this.moth = this.add.image(roomX(160), roomY(117), assetRegistry.resolve(this, TextureKey.Moth0)).setDepth(30);
-      this.moth.setAlpha(animate ? 0 : 1);
-      if (animate) this.tweens.add({ targets: this.moth, alpha: 1, y: roomY(114), duration: 700, ease: 'Sine.out' });
+      this.moth = this.add.image(
+        roomX(160),
+        roomY(animate ? 117 : 114),
+        assetRegistry.resolve(this, TextureKey.Moth0),
+      ).setDepth(30).setAlpha(animate ? 0 : 1);
+      if (animate) {
+        this.tweens.add({ targets: this.moth, alpha: 1, y: this.moth.y - 3, duration: 700, ease: 'Sine.out' });
+      }
       if (!stateStore.snapshot.preferences.reducedMotion) {
         this.tweens.add({ targets: this.moth, y: '+=2', duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
       }

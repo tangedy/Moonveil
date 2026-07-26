@@ -14,6 +14,7 @@ type VolumeSound = Phaser.Sound.BaseSound & {
 
 const toneDefinitions: Partial<Record<Cue, ToneDefinition>> = {
   [AudioCue.Step]: { frequency: 72, duration: 0.035, volume: 0.018, type: 'square' },
+  [AudioCue.MenuSelect]: { frequency: 659.25, duration: 0.26, volume: 0.034, type: 'triangle' },
   [AudioCue.DialogueMoth]: { frequency: 390, duration: 0.035, volume: 0.018, type: 'sine' },
   [AudioCue.DialogueSprout]: { frequency: 545, duration: 0.03, volume: 0.014, type: 'triangle' },
   [AudioCue.DialogueKeeper]: { frequency: 185, duration: 0.045, volume: 0.014, type: 'triangle' },

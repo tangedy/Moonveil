@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { projectInsideEllipse, reflectionFeetRotation } from '../../src/systems/PondReflection';
 import { resolveWorldWrap } from '../../src/systems/WorldWrap';
 
-const wrapBounds = { width: 640, height: 360, margin: 8, inset: 10 };
+const wrapBounds = { left: 96, top: -90, width: 448, height: 540 };
 
 describe('resolveWorldWrap', () => {
   it('does nothing while DREAMER remains inside the world seam', () => {
@@ -10,25 +10,39 @@ describe('resolveWorldWrap', () => {
   });
 
   it('wraps horizontally to the opposite side and preserves y', () => {
-    expect(resolveWorldWrap({ x: -9, y: 123 }, wrapBounds)).toEqual({
-      position: { x: 630, y: 123 },
+    expect(resolveWorldWrap({ x: 95, y: 123 }, wrapBounds)).toEqual({
+      position: { x: 543, y: 123 },
+      delta: { x: 448, y: 0 },
       horizontal: 'left-to-right',
       vertical: null,
     });
-    expect(resolveWorldWrap({ x: 649, y: 237 }, wrapBounds)).toEqual({
-      position: { x: 10, y: 237 },
+    expect(resolveWorldWrap({ x: 544, y: 237 }, wrapBounds)).toEqual({
+      position: { x: 96, y: 237 },
+      delta: { x: -448, y: 0 },
       horizontal: 'right-to-left',
       vertical: null,
     });
   });
 
   it('wraps vertically and resolves diagonal corner crossings once', () => {
-    expect(resolveWorldWrap({ x: 200, y: -9 }, wrapBounds)?.position).toEqual({ x: 200, y: 350 });
-    expect(resolveWorldWrap({ x: 649, y: 369 }, wrapBounds)).toEqual({
-      position: { x: 10, y: 10 },
+    expect(resolveWorldWrap({ x: 200, y: -91 }, wrapBounds)?.position).toEqual({ x: 200, y: 449 });
+    expect(resolveWorldWrap({ x: 544, y: 450 }, wrapBounds)).toEqual({
+      position: { x: 96, y: -90 },
+      delta: { x: -448, y: -540 },
       horizontal: 'right-to-left',
       vertical: 'bottom-to-top',
     });
+  });
+
+  it('keeps DREAMER inside the expanded black corridor until its outer edge', () => {
+    expect(resolveWorldWrap({ x: 96, y: -90 }, wrapBounds)).toBeNull();
+    expect(resolveWorldWrap({ x: 543, y: 449 }, wrapBounds)).toBeNull();
+  });
+
+  it('supports the small right-side corridor added for the revealed path', () => {
+    const pathBounds = { ...wrapBounds, width: 576 };
+    expect(resolveWorldWrap({ x: 650, y: 180 }, pathBounds)).toBeNull();
+    expect(resolveWorldWrap({ x: 672, y: 180 }, pathBounds)?.position).toEqual({ x: 96, y: 180 });
   });
 });
 

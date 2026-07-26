@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { PALETTE, SceneId, TextureKey } from '../game/config';
+import { AudioCue, PALETTE, SceneId, TextureKey } from '../game/config';
 import { assetRegistry, audioManager, dialogueOverlay, hud, inventoryOverlay, saveService, stateStore } from '../game/services';
 
 export class LaunchScene extends Phaser.Scene {
@@ -10,6 +10,8 @@ export class LaunchScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.starting = false;
+    this.input.enabled = true;
     hud.show(false);
     hud.hideHelp();
     inventoryOverlay.detach();
@@ -106,6 +108,11 @@ export class LaunchScene extends Phaser.Scene {
     if (this.starting) return;
     this.starting = true;
     await this.ensureMenuMusic();
+    this.input.enabled = false;
+    audioManager.cue(AudioCue.MenuSelect);
+    this.cameras.main.fadeOut(360, 255, 250, 242);
+    await new Promise<void>((resolve) => this.time.delayedCall(380, resolve));
+    audioManager.stopAmbience();
     await action();
   }
 }

@@ -12,6 +12,7 @@ import {
   saveService,
   stateStore,
 } from '../game/services';
+import { playCameraIntro } from '../systems/CameraIntro';
 import { InteractionSystem } from '../systems/InteractionSystem';
 import { projectInsideEllipse, reflectionFeetRotation } from '../systems/PondReflection';
 
@@ -45,7 +46,7 @@ export class VioletGardenScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.transitioning = false;
+    this.transitioning = true;
     this.interactions.clear();
     this.flowers = [];
     this.physics.world.setBounds(0, 0, 640, 360);
@@ -67,8 +68,7 @@ export class VioletGardenScene extends Phaser.Scene {
       : { x: 54, y: 302 };
     this.dreamer = new Dreamer(this, start.x, start.y, stateStore, audioManager, assetRegistry, true);
     this.physics.add.collider(this.dreamer, this.colliders);
-    this.cameras.main.startFollow(this.dreamer, true, 0.09, 0.09);
-    this.cameras.main.setRoundPixels(true);
+    this.dreamer.setInputLocked(true);
     inventoryOverlay.attach({
       canOpen: () => !dialogueOverlay.isVisible && !this.transitioning,
       onVisibilityChange: (open) => this.dreamer.setInputLocked(open),
@@ -78,7 +78,18 @@ export class VioletGardenScene extends Phaser.Scene {
     this.registerInteractions();
     this.syncConsequenceState();
     if (!stateStore.snapshot.garden.starTaken) audioManager.startStarHum();
-    this.cameras.main.fadeIn(500, 255, 250, 242);
+    playCameraIntro({
+      scene: this,
+      camera: this.cameras.main,
+      target: this.dreamer,
+      worldWidth: 640,
+      worldHeight: 360,
+      reducedMotion: stateStore.snapshot.preferences.reducedMotion,
+      onComplete: () => {
+        this.transitioning = false;
+        this.dreamer.setInputLocked(false);
+      },
+    });
   }
 
   update(_time: number, delta: number): void {

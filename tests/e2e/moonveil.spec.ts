@@ -61,6 +61,13 @@ async function tapGameKey(page: Page, key: string): Promise<void> {
   await page.keyboard.up(key);
 }
 
+async function waitForPrologueCamera(page: Page): Promise<void> {
+  await expect.poll(
+    () => page.evaluate(() => window.__MOONVEIL__?.view().camera?.scrollY),
+    { timeout: 3_000 },
+  ).toBeCloseTo(118, 0);
+}
+
 async function continueInGarden(
   page: Page,
   position: { x: number; y: number },
@@ -84,6 +91,7 @@ async function continueInGarden(
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
   await page.keyboard.press('Enter');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('VioletGarden');
+  await page.waitForTimeout(240);
 }
 
 async function continueInHouse(
@@ -183,8 +191,23 @@ test.beforeEach(async ({ page }) => {
 
 test('starts a new dream and moves continuously', async ({ page }) => {
   await page.keyboard.press('Enter');
+  await page.waitForTimeout(100);
+  expect(await page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Prologue');
   await expect(page.locator('#step-counter')).toContainText('STEPS 0000');
+
+  const introStart = await page.evaluate(() => window.__MOONVEIL__?.view());
+  expect(introStart?.camera?.scrollY).toBe(-90);
+  await page.keyboard.down('ArrowRight');
+  await page.waitForTimeout(260);
+  await page.keyboard.up('ArrowRight');
+  expect(await page.evaluate(() => window.__MOONVEIL__?.view().player)).toMatchObject({ x: 320, y: 208 });
+
+  await page.waitForTimeout(520);
+  const descendingY = await page.evaluate(() => window.__MOONVEIL__?.view().camera?.scrollY ?? 0);
+  expect(descendingY).toBeGreaterThan(-90);
+  expect(descendingY).toBeLessThan(118);
+  await waitForPrologueCamera(page);
 
   await page.keyboard.down('ArrowRight');
   await page.waitForTimeout(520);
@@ -198,25 +221,156 @@ test('starts a new dream and moves continuously', async ({ page }) => {
 test('crossing the left seam returns DREAMER from the right with the camera', async ({ page }) => {
   await page.keyboard.press('Enter');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Prologue');
+  await waitForPrologueCamera(page);
 
   const initialView = await page.evaluate(() => window.__MOONVEIL__?.view());
   expect(initialView?.player).toMatchObject({ x: 320, y: 208 });
 
   await page.keyboard.down('ArrowLeft');
+  let continuity: { before: number; after: number } | undefined;
   try {
-    await expect.poll(
-      () => page.evaluate(() => window.__MOONVEIL__?.state().prologue.loopCount),
-      { timeout: 7_000 },
-    ).toBe(1);
+    continuity = await page.evaluate(() => new Promise<{ before: number; after: number }>((resolve, reject) => {
+      const startedAt = performance.now();
+      let before: number | undefined;
+      const sample = (): void => {
+        const view = window.__MOONVEIL__?.view();
+        const loopCount = window.__MOONVEIL__?.state().prologue.loopCount;
+        if (view?.player && view.camera) {
+          const screenX = view.player.x - view.camera.scrollX;
+          if (loopCount === 0 && view.player.x < 106) before = screenX;
+          if (loopCount === 1 && before !== undefined) {
+            resolve({ before, after: screenX });
+            return;
+          }
+        }
+        if (performance.now() - startedAt > 7_000) {
+          reject(new Error('DREAMER did not cross the seam'));
+          return;
+        }
+        requestAnimationFrame(sample);
+      };
+      sample();
+    }));
   } finally {
     await page.keyboard.up('ArrowLeft');
   }
 
   const wrappedView = await page.evaluate(() => window.__MOONVEIL__?.view());
-  expect(wrappedView?.player?.x).toBeGreaterThan(570);
+  expect(wrappedView?.player?.x).toBeGreaterThan(530);
   expect(wrappedView?.camera?.scrollX).toBeGreaterThan(300);
   expect(wrappedView?.player?.y).toBeCloseTo(208, 0);
+  expect(Math.abs((continuity?.after ?? 0) - (continuity?.before ?? 0))).toBeLessThan(3);
   expect(await page.evaluate(() => window.__MOONVEIL__?.state().prologue.flowerRevealed)).toBe(true);
+});
+
+test('the revealed path expands only the right wrap corridor', async ({ page }) => {
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Prologue');
+  await page.evaluate(() => {
+    const state = window.__MOONVEIL__?.state();
+    if (!state) throw new Error('Moonveil state is unavailable');
+    const seeded = {
+      ...state,
+      currentScene: 'Prologue',
+      lastSafe: { scene: 'Prologue', position: { x: 520, y: 250 } },
+      prologue: {
+        ...state.prologue,
+        loopCount: 3,
+        flowerRevealed: true,
+        chairTurned: true,
+        mothAppeared: true,
+        pathRevealed: true,
+      },
+      preferences: { ...state.preferences, reducedMotion: true },
+    };
+    localStorage.setItem('moonveil.save.v1', JSON.stringify({ schema: 4, savedAt: Date.now(), state: seeded }));
+  });
+  await page.goto('/');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Prologue');
+  await page.waitForTimeout(240);
+
+  await page.keyboard.down('ArrowRight');
+  let maxBeforeWrap = 0;
+  try {
+    maxBeforeWrap = await page.evaluate(() => new Promise<number>((resolve, reject) => {
+      const startedAt = performance.now();
+      let maximumX = 0;
+      const sample = (): void => {
+        const x = window.__MOONVEIL__?.view().player?.x ?? 0;
+        maximumX = Math.max(maximumX, x);
+        if (maximumX > 650 && x < 130) {
+          resolve(maximumX);
+          return;
+        }
+        if (performance.now() - startedAt > 3_000) {
+          reject(new Error('DREAMER did not cross the expanded path seam'));
+          return;
+        }
+        requestAnimationFrame(sample);
+      };
+      sample();
+    }));
+  } finally {
+    await page.keyboard.up('ArrowRight');
+  }
+
+  expect(maxBeforeWrap).toBeGreaterThan(650);
+  const wrapped = await page.evaluate(() => window.__MOONVEIL__?.view());
+  expect(wrapped?.player?.x).toBeGreaterThanOrEqual(96);
+  expect(wrapped?.player?.x).toBeLessThan(130);
+});
+
+test('reduced motion skips the Prologue camera pan', async ({ page }) => {
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Prologue');
+  await page.evaluate(() => {
+    const state = window.__MOONVEIL__?.state();
+    if (!state) throw new Error('Moonveil state is unavailable');
+    localStorage.setItem('moonveil.save.v1', JSON.stringify({
+      schema: 4,
+      savedAt: Date.now(),
+      state: { ...state, preferences: { ...state.preferences, reducedMotion: true } },
+    }));
+  });
+  await page.goto('/');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Prologue');
+  expect(await page.evaluate(() => window.__MOONVEIL__?.view().camera?.scrollY)).toBeCloseTo(118, 0);
+});
+
+test('Violet Garden holds at the top before descending to DREAMER', async ({ page }) => {
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Prologue');
+  await page.evaluate(() => {
+    const state = window.__MOONVEIL__?.state();
+    if (!state) throw new Error('Moonveil state is unavailable');
+    const gardenState = {
+      ...state,
+      currentScene: 'VioletGarden',
+      lastSafe: { scene: 'VioletGarden', position: { x: 54, y: 302 } },
+      preferences: { ...state.preferences, reducedMotion: false },
+    };
+    localStorage.setItem('moonveil.save.v1', JSON.stringify({ schema: 4, savedAt: Date.now(), state: gardenState }));
+  });
+  await page.goto('/');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => window.__MOONVEIL__?.scene() === 'VioletGarden', undefined, { polling: 'raf' });
+
+  expect(await page.evaluate(() => window.__MOONVEIL__?.view().camera?.scrollY)).toBe(0);
+  await page.waitForTimeout(260);
+  expect(await page.evaluate(() => window.__MOONVEIL__?.view().camera?.scrollY)).toBe(0);
+  await page.waitForTimeout(520);
+  const descendingY = await page.evaluate(() => window.__MOONVEIL__?.view().camera?.scrollY ?? 0);
+  expect(descendingY).toBeGreaterThan(0);
+  expect(descendingY).toBeLessThan(180);
+  await expect.poll(
+    () => page.evaluate(() => window.__MOONVEIL__?.view().camera?.scrollY),
+    { timeout: 3_000 },
+  ).toBeCloseTo(180, 0);
 });
 
 test('Moth questions stay under the active line and reveal the path', async ({ page }) => {
@@ -245,6 +399,7 @@ test('Moth questions stay under the active line and reveal the path', async ({ p
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
   await page.keyboard.press('Enter');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Prologue');
+  await page.waitForTimeout(240);
 
   const dialogue = page.locator('#dialogue');
   const dialogueText = page.locator('#dialogue-text');

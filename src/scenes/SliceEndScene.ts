@@ -1,14 +1,18 @@
 import Phaser from 'phaser';
-import { PALETTE, SceneId, TextureKey } from '../game/config';
+import { AudioCue, PALETTE, SceneId, TextureKey } from '../game/config';
 import { assetRegistry, audioManager, dialogueOverlay, hud, inventoryOverlay, saveService, stateStore } from '../game/services';
 import { HOUSE_SPAWNS } from './HouseRoomScene';
 
 export class SliceEndScene extends Phaser.Scene {
+  private starting = false;
+
   constructor() {
     super(SceneId.SliceEnd);
   }
 
   create(): void {
+    this.starting = false;
+    this.input.enabled = true;
     hud.show(false);
     hud.hideHelp();
     inventoryOverlay.detach();
@@ -35,25 +39,25 @@ export class SliceEndScene extends Phaser.Scene {
       color: '#8d5bc9',
     }).setOrigin(0.5);
 
-    const continueButton = complete ? null : this.makeButton(160, 117, 'CONTINUE', () => {
+    const continueButton = complete ? null : this.makeButton(160, 117, 'CONTINUE', () => this.begin(() => {
       const spawn = HOUSE_SPAWNS[SceneId.HouseThreshold].left;
       stateStore.setScene(SceneId.HouseThreshold, spawn);
       saveService.save(stateStore.snapshot);
       this.scene.start(SceneId.HouseThreshold, { spawn });
-    });
-    const beginButton = this.makeButton(160, complete ? 132 : 140, 'BEGIN AGAIN', () => {
+    }));
+    const beginButton = this.makeButton(160, complete ? 132 : 140, 'BEGIN AGAIN', () => this.begin(() => {
       stateStore.reset();
       saveService.save(stateStore.snapshot);
       this.scene.start(SceneId.Prologue);
-    });
-    this.makeButton(160, complete ? 153 : 160, 'TITLE', () => this.scene.start(SceneId.Launch));
+    }));
+    this.makeButton(160, complete ? 153 : 160, 'TITLE', () => this.begin(() => this.scene.start(SceneId.Launch)));
 
     const preferred = continueButton ?? beginButton;
     this.input.keyboard?.once('keydown-ENTER', () => preferred.emit('pointerdown'));
     this.input.keyboard?.once('keydown-SPACE', () => preferred.emit('pointerdown'));
   }
 
-  private makeButton(x: number, y: number, label: string, action: () => void): Phaser.GameObjects.Text {
+  private makeButton(x: number, y: number, label: string, action: () => Promise<void>): Phaser.GameObjects.Text {
     const button = this.add.text(x, y, `◇  ${label}`, {
       fontFamily: 'monospace',
       fontSize: '8px',
@@ -62,7 +66,19 @@ export class SliceEndScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
     button.on('pointerover', () => button.setText(`◆  ${label}`).setColor('#fffaf2'));
     button.on('pointerout', () => button.setText(`◇  ${label}`).setColor('#c9a7f2'));
-    button.on('pointerdown', action);
+    button.on('pointerdown', () => void action());
     return button;
+  }
+
+  private async begin(action: () => void): Promise<void> {
+    if (this.starting) return;
+    this.starting = true;
+    await audioManager.unlock();
+    this.input.enabled = false;
+    audioManager.cue(AudioCue.MenuSelect);
+    this.cameras.main.fadeOut(360, 255, 250, 242);
+    await new Promise<void>((resolve) => this.time.delayedCall(380, resolve));
+    audioManager.stopAmbience();
+    action();
   }
 }
