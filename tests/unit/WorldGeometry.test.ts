@@ -1,8 +1,19 @@
 import { describe, expect, it } from 'vitest';
+import { PROLOGUE_GEOMETRY } from '../../src/game/config';
 import { projectInsideEllipse, reflectionFeetRotation } from '../../src/systems/PondReflection';
 import { resolveWorldWrap } from '../../src/systems/WorldWrap';
 
-const wrapBounds = { left: 96, top: -90, width: 448, height: 540 };
+const wrapLeft = PROLOGUE_GEOMETRY.wrapLeft;
+const wrapRight = PROLOGUE_GEOMETRY.wrapRight;
+const wrapWidth = wrapRight - wrapLeft;
+const wrapHeight = PROLOGUE_GEOMETRY.worldHeight + PROLOGUE_GEOMETRY.wrapPaddingY * 2;
+const wrapBounds = {
+  left: wrapLeft,
+  top: -PROLOGUE_GEOMETRY.wrapPaddingY,
+  width: wrapWidth,
+  height: wrapHeight,
+};
+const pathWidth = PROLOGUE_GEOMETRY.pathWrapRight - wrapLeft;
 
 describe('resolveWorldWrap', () => {
   it('does nothing while DREAMER remains inside the world seam', () => {
@@ -10,15 +21,15 @@ describe('resolveWorldWrap', () => {
   });
 
   it('wraps horizontally to the opposite side and preserves y', () => {
-    expect(resolveWorldWrap({ x: 95, y: 123 }, wrapBounds)).toEqual({
-      position: { x: 543, y: 123 },
-      delta: { x: 448, y: 0 },
+    expect(resolveWorldWrap({ x: wrapLeft - 1, y: 123 }, wrapBounds)).toEqual({
+      position: { x: wrapRight - 1, y: 123 },
+      delta: { x: wrapWidth, y: 0 },
       horizontal: 'left-to-right',
       vertical: null,
     });
-    expect(resolveWorldWrap({ x: 544, y: 237 }, wrapBounds)).toEqual({
-      position: { x: 96, y: 237 },
-      delta: { x: -448, y: 0 },
+    expect(resolveWorldWrap({ x: wrapRight, y: 237 }, wrapBounds)).toEqual({
+      position: { x: wrapLeft, y: 237 },
+      delta: { x: -wrapWidth, y: 0 },
       horizontal: 'right-to-left',
       vertical: null,
     });
@@ -26,23 +37,24 @@ describe('resolveWorldWrap', () => {
 
   it('wraps vertically and resolves diagonal corner crossings once', () => {
     expect(resolveWorldWrap({ x: 200, y: -91 }, wrapBounds)?.position).toEqual({ x: 200, y: 449 });
-    expect(resolveWorldWrap({ x: 544, y: 450 }, wrapBounds)).toEqual({
-      position: { x: 96, y: -90 },
-      delta: { x: -448, y: -540 },
+    expect(resolveWorldWrap({ x: wrapRight, y: 450 }, wrapBounds)).toEqual({
+      position: { x: wrapLeft, y: -90 },
+      delta: { x: -wrapWidth, y: -wrapHeight },
       horizontal: 'right-to-left',
       vertical: 'bottom-to-top',
     });
   });
 
   it('keeps DREAMER inside the expanded black corridor until its outer edge', () => {
-    expect(resolveWorldWrap({ x: 96, y: -90 }, wrapBounds)).toBeNull();
-    expect(resolveWorldWrap({ x: 543, y: 449 }, wrapBounds)).toBeNull();
+    expect(resolveWorldWrap({ x: wrapLeft, y: -90 }, wrapBounds)).toBeNull();
+    expect(resolveWorldWrap({ x: wrapRight - 1, y: 449 }, wrapBounds)).toBeNull();
   });
 
   it('supports the small right-side corridor added for the revealed path', () => {
-    const pathBounds = { ...wrapBounds, width: 576 };
-    expect(resolveWorldWrap({ x: 650, y: 180 }, pathBounds)).toBeNull();
-    expect(resolveWorldWrap({ x: 672, y: 180 }, pathBounds)?.position).toEqual({ x: 96, y: 180 });
+    const pathBounds = { ...wrapBounds, width: pathWidth };
+    expect(resolveWorldWrap({ x: wrapRight + 20, y: 180 }, pathBounds)).toBeNull();
+    expect(resolveWorldWrap({ x: PROLOGUE_GEOMETRY.pathWrapRight, y: 180 }, pathBounds)?.position)
+      .toEqual({ x: wrapLeft, y: 180 });
   });
 });
 
