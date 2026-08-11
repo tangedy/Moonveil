@@ -104,7 +104,9 @@ export class VioletGardenScene extends Phaser.Scene {
     this.updateReflection();
 
     if (!stateStore.snapshot.garden.starTaken) {
-      audioManager.setStarDistance(Phaser.Math.Distance.Between(this.dreamer.x, this.dreamer.y, this.star.x, this.star.y));
+      const distance = Phaser.Math.Distance.Between(this.dreamer.x, this.dreamer.y, this.star.x, this.star.y);
+      audioManager.setStarDistance(distance);
+      audioManager.setGardenDistance(distance);
     }
 
     if (
@@ -323,6 +325,7 @@ export class VioletGardenScene extends Phaser.Scene {
     this.transitioning = false;
     this.dreamer.setInputLocked(false);
     await this.say(gardenDialogue.starTaken);
+    audioManager.restoreGardenVolume();
   }
 
   private createNightmareOverlay(): Phaser.GameObjects.Container {

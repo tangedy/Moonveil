@@ -40,6 +40,8 @@ export class AudioManager {
   private houseSound: VolumeSound | null = null;
   private starSound: VolumeSound | null = null;
   private starVolume = 0;
+  private gardenVolume = 0.16;
+  private currentGardenVolume = 0.16;
   private starOscillator: OscillatorNode | null = null;
   private starGain: GainNode | null = null;
 
@@ -59,7 +61,7 @@ export class AudioManager {
       gain.gain.setTargetAtTime(muted ? 0 : (this.ambienceTargets[index] ?? 0.003), gain.context.currentTime, 0.08);
     });
     this.menuSound?.setVolume(muted ? 0 : 0.38);
-    this.gardenSound?.setVolume(muted ? 0 : 0.16);
+    this.gardenSound?.setVolume(muted ? 0 : this.currentGardenVolume);
     this.houseSound?.setVolume(muted ? 0 : 0.14);
     this.starSound?.setVolume(muted ? 0 : this.starVolume);
     if (this.starGain) this.starGain.gain.setTargetAtTime(muted ? 0 : this.starVolume, this.starGain.context.currentTime, 0.05);
@@ -116,7 +118,7 @@ export class AudioManager {
     this.stopAmbience();
     const overrideKey = `override-audio:${AudioCue.Garden}`;
     if (this.scene?.cache.audio.exists(overrideKey)) {
-      this.gardenSound = this.scene.sound.add(overrideKey, { loop: true, volume: this.muted ? 0 : 0.16 }) as VolumeSound;
+      this.gardenSound = this.scene.sound.add(overrideKey, { loop: true, volume: this.muted ? 0 : this.currentGardenVolume }) as VolumeSound;
       this.gardenSound.play();
       return;
     }
@@ -182,6 +184,20 @@ export class AudioManager {
     this.starVolume = volume;
     this.starSound?.setVolume(this.muted ? 0 : Math.min(0.3, volume * 10));
     if (this.starGain) this.starGain.gain.setTargetAtTime(this.muted ? 0 : volume, this.starGain.context.currentTime, 0.08);
+  }
+
+  setGardenDistance(distance: number): void {
+    const quietRadius = 20;
+    const fullRadius = 150;
+    const clamped = Math.min(1, Math.max(0, (distance - quietRadius) / (fullRadius - quietRadius)));
+    const volume = clamped * this.gardenVolume;
+    this.currentGardenVolume = volume;
+    this.gardenSound?.setVolume(this.muted ? 0 : volume);
+  }
+
+  restoreGardenVolume(): void {
+    this.currentGardenVolume = this.gardenVolume;
+    this.gardenSound?.setVolume(this.muted ? 0 : this.gardenVolume);
   }
 
   stopStarHum(): void {
