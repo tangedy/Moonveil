@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { AudioCue, PALETTE, SceneId, TextureKey } from '../game/config';
-import { assetRegistry, audioManager, dialogueOverlay, hud, inventoryOverlay, saveService, stateStore } from '../game/services';
+import { assetRegistry, audioManager, dialogueOverlay, pauseMenuOverlay, saveService, stateStore } from '../game/services';
 import { HOUSE_SPAWNS } from './HouseRoomScene';
 
 export class SliceEndScene extends Phaser.Scene {
@@ -12,49 +12,46 @@ export class SliceEndScene extends Phaser.Scene {
 
   create(): void {
     this.starting = false;
+    if (!stateStore.snapshot.house.complete) {
+      const spawn = HOUSE_SPAWNS[SceneId.HouseThreshold].left;
+      stateStore.setScene(SceneId.HouseThreshold, spawn);
+      saveService.save(stateStore.snapshot);
+      this.scene.start(SceneId.HouseThreshold, { spawn });
+      return;
+    }
+
     this.input.enabled = true;
-    hud.show(false);
-    hud.hideHelp();
-    inventoryOverlay.detach();
+    pauseMenuOverlay.detach();
     void dialogueOverlay.hide(true);
     audioManager.attach(this);
     audioManager.stopAmbience();
     this.cameras.main.setBackgroundColor(PALETTE.ink);
 
-    const complete = stateStore.snapshot.house.complete;
-    const emblemKey = complete ? TextureKey.HousePlant : TextureKey.Star0;
-    const emblem = this.add.image(160, 40, assetRegistry.resolve(this, emblemKey)).setScale(1.25).setAlpha(0);
+    const emblem = this.add.image(160, 40, assetRegistry.resolve(this, TextureKey.HousePlant)).setScale(1.25).setAlpha(0);
     this.tweens.add({ targets: emblem, alpha: 1, duration: 1400, ease: 'Sine.inOut' });
     this.tweens.add({ targets: emblem, y: 44, duration: 1800, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
 
-    this.add.text(160, 72, complete ? 'THE HOUSE HAS MADE ROOM.' : 'THE GARDEN REMEMBERS.', {
+    this.add.text(160, 72, 'THE HOUSE HAS MADE ROOM.', {
       fontFamily: 'Georgia, serif',
       fontSize: '13px',
       color: '#fffaf2',
       letterSpacing: 2,
     }).setOrigin(0.5);
-    this.add.text(160, 93, complete ? 'End of the current dream' : 'A house is waiting without doors', {
+    this.add.text(160, 93, 'End of the current dream', {
       fontFamily: 'monospace',
       fontSize: '7px',
       color: '#8d5bc9',
     }).setOrigin(0.5);
 
-    const continueButton = complete ? null : this.makeButton(160, 117, 'CONTINUE', () => this.begin(() => {
-      const spawn = HOUSE_SPAWNS[SceneId.HouseThreshold].left;
-      stateStore.setScene(SceneId.HouseThreshold, spawn);
-      saveService.save(stateStore.snapshot);
-      this.scene.start(SceneId.HouseThreshold, { spawn });
-    }));
-    const beginButton = this.makeButton(160, complete ? 132 : 140, 'BEGIN AGAIN', () => this.begin(() => {
+    const beginButton = this.makeButton(160, 132, 'BEGIN AGAIN', () => this.begin(() => {
       stateStore.reset();
       saveService.save(stateStore.snapshot);
       this.scene.start(SceneId.Prologue);
     }));
-    this.makeButton(160, complete ? 153 : 160, 'TITLE', () => this.begin(() => this.scene.start(SceneId.Launch)));
+    this.makeButton(160, 153, 'TITLE', () => this.begin(() => this.scene.start(SceneId.Launch)));
 
-    const preferred = continueButton ?? beginButton;
-    this.input.keyboard?.once('keydown-ENTER', () => preferred.emit('pointerdown'));
-    this.input.keyboard?.once('keydown-SPACE', () => preferred.emit('pointerdown'));
+    this.input.keyboard?.once('keydown-ENTER', () => beginButton.emit('pointerdown'));
+    this.input.keyboard?.once('keydown-SPACE', () => beginButton.emit('pointerdown'));
   }
 
   private makeButton(x: number, y: number, label: string, action: () => Promise<void>): Phaser.GameObjects.Text {

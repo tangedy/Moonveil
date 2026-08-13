@@ -38,6 +38,7 @@ export class AudioManager {
   private menuSound: VolumeSound | null = null;
   private gardenSound: VolumeSound | null = null;
   private houseSound: VolumeSound | null = null;
+  private houseAmbienceActive = false;
   private starSound: VolumeSound | null = null;
   private starVolume = 0;
   private gardenVolume = 0.16;
@@ -139,11 +140,13 @@ export class AudioManager {
   }
 
   startHouseAmbience(): void {
+    if (this.houseAmbienceActive && (this.houseSound?.isPlaying || this.ambienceNodes.length > 0)) return;
     this.stopAmbience();
     const overrideKey = `override-audio:${AudioCue.House}`;
     if (this.scene?.cache.audio.exists(overrideKey)) {
       this.houseSound = this.scene.sound.add(overrideKey, { loop: true, volume: this.muted ? 0 : 0.14 }) as VolumeSound;
       this.houseSound.play();
+      this.houseAmbienceActive = true;
       return;
     }
     if (!this.context) return;
@@ -160,6 +163,7 @@ export class AudioManager {
       this.ambienceGains.push(gain);
       this.ambienceTargets.push(target);
     });
+    this.houseAmbienceActive = true;
   }
 
   startStarHum(): void {
@@ -221,6 +225,7 @@ export class AudioManager {
     this.houseSound?.stop();
     this.houseSound?.destroy();
     this.houseSound = null;
+    this.houseAmbienceActive = false;
     this.ambienceNodes.forEach((node) => {
       node.stop();
       node.disconnect();

@@ -7,8 +7,7 @@ import {
   audioManager,
   dialogueOverlay,
   dialogueSystem,
-  hud,
-  inventoryOverlay,
+  pauseMenuOverlay,
   saveService,
   stateStore,
 } from '../game/services';
@@ -53,8 +52,6 @@ export class PrologueScene extends Phaser.Scene {
     audioManager.attach(this);
     audioManager.stopAmbience();
     audioManager.setMuted(stateStore.snapshot.preferences.muted);
-    hud.show(true);
-    hud.showHelp();
 
     const ground = this.add.graphics();
     ground.fillStyle(PALETTE.paper, 1);
@@ -81,11 +78,18 @@ export class PrologueScene extends Phaser.Scene {
     this.dreamer = new Dreamer(this, start.x, start.y, stateStore, audioManager, assetRegistry, false);
     this.physics.add.collider(this.dreamer, this.chair);
     this.dreamer.setInputLocked(true);
-    inventoryOverlay.attach({
+    pauseMenuOverlay.attach({
       canOpen: () => !dialogueOverlay.isVisible && !this.transitioning,
       onVisibilityChange: (open) => this.dreamer.setInputLocked(open),
+      onSave: () => {
+        stateStore.setSafePosition(this.dreamer);
+        saveService.save(stateStore.snapshot);
+      },
+      onLeaveGame: () => {
+        this.scene.start(SceneId.Launch);
+      },
     });
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => inventoryOverlay.detach());
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => pauseMenuOverlay.detach());
 
     this.interactions.add({
       id: 'prologue-chair',
