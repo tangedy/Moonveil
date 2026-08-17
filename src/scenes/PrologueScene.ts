@@ -29,6 +29,7 @@ export class PrologueScene extends Phaser.Scene {
   private chair!: Phaser.GameObjects.Image;
   private flower: Phaser.GameObjects.Image | null = null;
   private moth: Phaser.GameObjects.Image | null = null;
+  private mothCollider: Phaser.GameObjects.Zone | null = null;
   private path!: Phaser.GameObjects.Graphics;
   private readonly interactions = new InteractionSystem();
   private transitioning = false;
@@ -42,6 +43,7 @@ export class PrologueScene extends Phaser.Scene {
     this.interactions.clear();
     this.flower = null;
     this.moth = null;
+    this.mothCollider = null;
     this.cameras.main.setBackgroundColor(PALETTE.black);
     this.physics.world.setBounds(wrapLeft, wrapTop, maxWrapWidth, wrapHeight);
     this.cameras.main.setBounds(
@@ -256,6 +258,9 @@ export class PrologueScene extends Phaser.Scene {
       if (!stateStore.snapshot.preferences.reducedMotion) {
         this.tweens.add({ targets: this.moth, y: '+=2', duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
       }
+      this.mothCollider = this.add.zone(roomX(160), roomY(124), 12, 7);
+      this.physics.add.existing(this.mothCollider, true);
+      this.physics.add.collider(this.dreamer, this.mothCollider);
       this.interactions.add({
         id: 'prologue-moth',
         kind: 'npc',

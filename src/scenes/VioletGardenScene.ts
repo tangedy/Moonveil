@@ -106,13 +106,6 @@ export class VioletGardenScene extends Phaser.Scene {
     if (!stateStore.snapshot.garden.starTaken) {
       audioManager.setStarDistance(Phaser.Math.Distance.Between(this.dreamer.x, this.dreamer.y, this.star.x, this.star.y));
     }
-
-    if (
-      stateStore.snapshot.garden.archUnlocked &&
-      Phaser.Math.Distance.Between(this.dreamer.x, this.dreamer.y, this.arch.x, this.arch.y + 12) < 16
-    ) {
-      void this.finishSlice();
-    }
   }
 
   private drawGarden(): void {
@@ -209,6 +202,8 @@ export class VioletGardenScene extends Phaser.Scene {
 
     this.moth = this.add.image(112, 267, assetRegistry.resolve(this, TextureKey.Moth0)).setDepth(15);
     this.sprout = this.add.image(256, 112, assetRegistry.resolve(this, TextureKey.Sprout0)).setDepth(15);
+    this.addStaticCollider(112, 274, 12, 7);
+    this.addStaticCollider(256, 119, 12, 7);
     this.star = this.add.image(507, 268, assetRegistry.resolve(this, TextureKey.Star0)).setDepth(13);
     this.arch = this.add.image(
       566,
@@ -344,7 +339,11 @@ export class VioletGardenScene extends Phaser.Scene {
   }
 
   private async inspectArch(): Promise<void> {
-    await this.say(stateStore.snapshot.garden.archUnlocked ? gardenDialogue.archOpen : gardenDialogue.archClosed);
+    if (stateStore.snapshot.garden.archUnlocked) {
+      await this.finishSlice();
+      return;
+    }
+    await this.say(gardenDialogue.archClosed);
   }
 
   private syncConsequenceState(): void {

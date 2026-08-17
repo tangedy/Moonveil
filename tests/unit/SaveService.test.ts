@@ -25,6 +25,30 @@ describe('SaveService', () => {
     expect(saves.load()!.prologue.loopCount).toBe(1);
   });
 
+  it('normalizes Sprout arrival in saves from the old first-association rule', () => {
+    const storage = new MemoryStorage();
+    const saves = new SaveService(storage);
+    const state = structuredClone(new GameStateStore().snapshot);
+    state.house.breadInterpretation = 'welcome';
+    state.house.sproutArrived = true;
+    state.house.sproutSpoken = true;
+    saves.save(state);
+
+    expect(saves.load()?.house.sproutArrived).toBe(false);
+    expect(saves.load()?.house.sproutSpoken).toBe(false);
+  });
+
+  it('rejects saves with an invalid interaction facing', () => {
+    const storage = new MemoryStorage();
+    const state = structuredClone(new GameStateStore().snapshot) as unknown as Record<string, unknown>;
+    state.facing = 'sideways';
+    storage.setItem(SAVE_KEY, JSON.stringify({ schema: 4, savedAt: 1, state }));
+
+    const saves = new SaveService(storage);
+    expect(saves.load()).toBeNull();
+    expect(saves.hasSave()).toBe(false);
+  });
+
   it('clears a corrupted save rather than loading partial data', () => {
     const storage = new MemoryStorage();
     storage.setItem(SAVE_KEY, '{definitely-not-json');

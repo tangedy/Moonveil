@@ -64,7 +64,7 @@ async function tapGameKey(page: Page, key: string): Promise<void> {
 async function waitForPrologueCamera(page: Page): Promise<void> {
   await expect.poll(
     () => page.evaluate(() => window.__MOONVEIL__?.view().camera?.scrollY),
-    { timeout: 3_000 },
+    { timeout: 4_500 },
   ).toBeCloseTo(118, 0);
 }
 
@@ -203,7 +203,7 @@ test('starts a new dream and moves continuously', async ({ page }) => {
   await page.keyboard.up('ArrowRight');
   expect(await page.evaluate(() => window.__MOONVEIL__?.view().player)).toMatchObject({ x: 320, y: 208 });
 
-  await page.waitForTimeout(520);
+  await page.waitForTimeout(820);
   const descendingY = await page.evaluate(() => window.__MOONVEIL__?.view().camera?.scrollY ?? 0);
   expect(descendingY).toBeGreaterThan(-90);
   expect(descendingY).toBeLessThan(118);
@@ -304,7 +304,7 @@ test('the revealed path expands only the right wrap corridor', async ({ page }) 
           resolve(maximumX);
           return;
         }
-        if (performance.now() - startedAt > 3_000) {
+        if (performance.now() - startedAt > 5_000) {
           reject(new Error('DREAMER did not cross the expanded path seam'));
           return;
         }
@@ -318,8 +318,8 @@ test('the revealed path expands only the right wrap corridor', async ({ page }) 
 
   expect(maxBeforeWrap).toBeGreaterThan(650);
   const wrapped = await page.evaluate(() => window.__MOONVEIL__?.view());
-  expect(wrapped?.player?.x).toBeGreaterThanOrEqual(96);
-  expect(wrapped?.player?.x).toBeLessThan(130);
+  expect(wrapped?.player?.x).toBeGreaterThan(-40);
+  expect(wrapped?.player?.x).toBeLessThan(20);
 });
 
 test('reduced motion skips the Prologue camera pan', async ({ page }) => {
@@ -363,7 +363,7 @@ test('Violet Garden holds at the top before descending to DREAMER', async ({ pag
   expect(await page.evaluate(() => window.__MOONVEIL__?.view().camera?.scrollY)).toBe(0);
   await page.waitForTimeout(260);
   expect(await page.evaluate(() => window.__MOONVEIL__?.view().camera?.scrollY)).toBe(0);
-  await page.waitForTimeout(520);
+  await page.waitForTimeout(900);
   const descendingY = await page.evaluate(() => window.__MOONVEIL__?.view().camera?.scrollY ?? 0);
   expect(descendingY).toBeGreaterThan(0);
   expect(descendingY).toBeLessThan(180);

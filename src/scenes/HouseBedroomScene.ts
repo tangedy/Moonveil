@@ -1,7 +1,7 @@
 import type Phaser from 'phaser';
 import { houseChoices, houseDialogue } from '../content/houseWithoutDoors';
 import { AudioCue, PALETTE, SceneId, TextureKey } from '../game/config';
-import { assetRegistry, audioManager, stateStore } from '../game/services';
+import { assetRegistry, audioManager, hud, stateStore } from '../game/services';
 import type { BreadInterpretation, Position } from '../state/GameState';
 import { HOUSE_SPAWNS, HouseRoomScene } from './HouseRoomScene';
 
@@ -10,7 +10,7 @@ export class HouseBedroomScene extends HouseRoomScene {
   private sproutPresent = false;
 
   constructor() {
-    super(SceneId.HouseBedroom, 'bedroom', 'THE UNUSED BEDROOM', 'The sheets pretend to be asleep.');
+    super(SceneId.HouseBedroom, 'bedroom', 'The sheets pretend to be asleep.');
   }
 
   protected defaultSpawn(): Position {
@@ -48,8 +48,6 @@ export class HouseBedroomScene extends HouseRoomScene {
     this.addPassage(20, 116, true, Math.PI);
     this.kitchenPassage = this.addPassage(300, 116, Boolean(stateStore.snapshot.house.breadInterpretation));
     this.addPassage(160, 21, false, -Math.PI / 2);
-    this.addObjectCaption(136, 139, 'NEVER SLEPT IN');
-    this.addObjectCaption(270, 52, 'WARM BREAD · NO KITCHEN');
     this.addCollider(136, 102, 120, 68);
     this.addCollider(248, 100, 59, 54);
   }
@@ -104,9 +102,10 @@ export class HouseBedroomScene extends HouseRoomScene {
     audioManager.cue(AudioCue.PassageMemory);
     this.checkpoint();
     await this.say(houseDialogue.breadResolved[interpretation]);
-    if (!this.sproutPresent) {
+    if (stateStore.snapshot.house.sproutArrived && !this.sproutPresent) {
       this.installSprout();
       this.registerSproutInteraction();
+      hud.showMessage('Something entered through the window.');
     }
   }
 

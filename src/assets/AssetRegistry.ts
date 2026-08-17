@@ -281,19 +281,18 @@ export class AssetRegistry {
     const makePassage = (key: string, stable: boolean): void => {
       if (scene.textures.exists(key)) return;
       const g = graphics(scene);
-      g.fillStyle(PALETTE.black);
-      g.fillRoundedRect(1, 1, 18, 29, 8);
-      g.lineStyle(stable ? 2 : 1, stable ? PALETTE.paper : PALETTE.violet, stable ? 0.85 : 0.45);
-      g.strokeRoundedRect(2, 2, 16, 28, 7);
-      g.fillStyle(stable ? PALETTE.violetDark : PALETTE.ink, stable ? 0.72 : 0.9);
-      g.fillRoundedRect(6, 7, 8, 23, 4);
+      g.fillStyle(stable ? PALETTE.black : PALETTE.violetDeep);
+      g.fillRect(1, 1, 18, 30);
+      g.lineStyle(2, stable ? PALETTE.violetDark : PALETTE.violet, stable ? 0.9 : 0.38);
+      g.strokeRect(2, 2, 16, 29);
       if (!stable) {
         g.lineStyle(1, PALETTE.violetLight, 0.35);
-        g.lineBetween(3, 7, 17, 12);
-        g.lineBetween(4, 19, 16, 16);
+        g.lineBetween(4, 4, 11, 12);
+        g.lineBetween(11, 12, 7, 19);
+        g.lineBetween(7, 19, 16, 27);
       } else {
-        g.fillStyle(PALETTE.paper, 0.55);
-        g.fillRect(9, 9, 2, 13);
+        g.fillStyle(PALETTE.violetLight, 0.22);
+        g.fillRect(3, 28, 14, 2);
       }
       finish(g, key, 20, 31);
     };

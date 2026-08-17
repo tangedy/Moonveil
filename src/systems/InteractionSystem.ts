@@ -35,13 +35,20 @@ export function findBestInteraction(
       const dx = target.x - origin.x;
       const dy = target.y - origin.y;
       const centerDistance = Math.hypot(dx, dy);
-      const edgeDistance = Math.max(0, centerDistance - (target.radius ?? 0));
-      const alignment = centerDistance < 0.001 ? 1 : (dx * forward.x + dy * forward.y) / centerDistance;
-      const kindBonus = target.kind === 'npc' ? 100 : 0;
-      return { target, edgeDistance, alignment, score: kindBonus + alignment * 40 - edgeDistance };
+      const radius = target.radius ?? 0;
+      const edgeDistance = Math.max(0, centerDistance - radius);
+      const forwardDistance = dx * forward.x + dy * forward.y;
+      const lateralDistance = Math.abs(dx * forward.y - dy * forward.x);
+      const lateralAllowance = Math.max(10, radius + MOVEMENT.bodyWidth / 2 + 4);
+      const alignment = centerDistance < 0.001 ? 1 : forwardDistance / centerDistance;
+      const npcPreference = target.kind === 'npc' ? 3 : 0;
+      const score = edgeDistance + lateralDistance * 0.25 - alignment * 2 - npcPreference;
+      return { target, edgeDistance, forwardDistance, lateralDistance, lateralAllowance, score };
     })
-    .filter(({ edgeDistance, alignment }) => edgeDistance <= range && alignment >= 0.12)
-    .sort((a, b) => b.score - a.score || a.edgeDistance - b.edgeDistance);
+    .filter(({ edgeDistance, forwardDistance, lateralDistance, lateralAllowance }) => (
+      edgeDistance <= range && forwardDistance > 0 && lateralDistance <= lateralAllowance
+    ))
+    .sort((a, b) => a.score - b.score || a.edgeDistance - b.edgeDistance);
 
   return ranked[0]?.target ?? null;
 }

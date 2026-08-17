@@ -1,14 +1,11 @@
 import { houseDialogue } from '../content/houseWithoutDoors';
 import { PALETTE, SceneId } from '../game/config';
-import { stateStore } from '../game/services';
 import type { Position } from '../state/GameState';
 import { HOUSE_SPAWNS, HouseRoomScene } from './HouseRoomScene';
 
 export class HouseNurseryScene extends HouseRoomScene {
-  private sproutPresent = false;
-
   constructor() {
-    super(SceneId.HouseNursery, 'nursery', 'THE NURSERY', 'The cradle rocks at an adult pace.');
+    super(SceneId.HouseNursery, 'nursery', 'The cradle rocks at an adult pace.');
   }
 
   protected defaultSpawn(): Position {
@@ -43,10 +40,7 @@ export class HouseNurseryScene extends HouseRoomScene {
     g.strokeCircle(246, 126, 3);
 
     this.addKeeper(272, 142);
-    if (stateStore.snapshot.house.sproutArrived) this.installSprout();
-    this.addPassage(160, 21, Boolean(stateStore.snapshot.house.toyInterpretation), -Math.PI / 2);
-    this.addObjectCaption(139, 145, 'BUILT TO BE OUTGROWN');
-    this.addObjectCaption(258, 111, 'ONE WHEEL IS MISSING');
+    this.addPassage(160, 21, true, -Math.PI / 2);
     this.addCollider(139, 101, 158, 78);
   }
 
@@ -61,26 +55,6 @@ export class HouseNurseryScene extends HouseRoomScene {
       y: 142,
       radius: 10,
       interact: () => this.talkToRoomKeeper(houseDialogue.nurseryArrival, houseDialogue.keeperPreservation),
-    });
-    if (this.sproutPresent) this.registerSproutInteraction();
-  }
-
-  private installSprout(): void {
-    if (this.sproutPresent) return;
-    this.sproutPresent = true;
-    this.addSprout(46, 142);
-  }
-
-  private registerSproutInteraction(): void {
-    this.addInteraction({
-      id: 'nursery-sprout',
-      kind: 'npc',
-      x: 46,
-      y: 142,
-      radius: 10,
-      interact: () => this.talkToHouseSprout(
-        stateStore.snapshot.house.starOutcome ? houseDialogue.sproutAfterPhoto : houseDialogue.sproutRepeat,
-      ),
     });
   }
 }

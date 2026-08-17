@@ -12,8 +12,8 @@ interface CameraIntroOptions {
   onComplete: () => void;
 }
 
-const HOLD_DURATION = 480;
-const PAN_DURATION = 1250;
+const HOLD_DURATION = 1000;
+const PAN_DURATION = 2000;
 const FADE_DURATION = 420;
 const REDUCED_FADE_DURATION = 180;
 
@@ -62,7 +62,7 @@ export function playCameraIntro({
       targets: camera,
       scrollY: targetScrollY,
       duration: PAN_DURATION,
-      ease: 'Sine.inOut',
+      ease: 'Linear',
       onComplete: finish,
     });
   });

@@ -67,17 +67,26 @@ describe('GameStateStore', () => {
     });
   });
 
-  it('resolves both associations once and admits Sprout after the first', () => {
+  it('resolves both associations once and admits Sprout after the second', () => {
     const store = new GameStateStore();
     expect(store.resolveBreadAssociation('welcome')).toBe(true);
     expect(store.resolveBreadAssociation('habit')).toBe(false);
-    expect(store.snapshot.house.sproutArrived).toBe(true);
+    expect(store.snapshot.house.sproutArrived).toBe(false);
     expect(store.resolveToyAssociation('company')).toBe(true);
     expect(store.resolveToyAssociation('waiting')).toBe(false);
     expect(store.snapshot.house).toMatchObject({
       breadInterpretation: 'welcome',
       toyInterpretation: 'company',
+      sproutArrived: true,
     });
+  });
+
+  it('admits Sprout after the second association in either order', () => {
+    const store = new GameStateStore();
+    store.resolveToyAssociation('waiting');
+    expect(store.snapshot.house.sproutArrived).toBe(false);
+    store.resolveBreadAssociation('habit');
+    expect(store.snapshot.house.sproutArrived).toBe(true);
   });
 
   it.each([

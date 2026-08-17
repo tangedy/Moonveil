@@ -1,7 +1,7 @@
 import type Phaser from 'phaser';
 import { houseChoices, houseDialogue } from '../content/houseWithoutDoors';
 import { AudioCue, PALETTE, SceneId, TextureKey } from '../game/config';
-import { assetRegistry, audioManager, stateStore } from '../game/services';
+import { assetRegistry, audioManager, hud, stateStore } from '../game/services';
 import type { PhotographBelief, PortraitSubject, Position, StarStatement } from '../state/GameState';
 import { HOUSE_SPAWNS, HouseRoomScene } from './HouseRoomScene';
 
@@ -11,7 +11,7 @@ export class HouseHallwayScene extends HouseRoomScene {
   private unkeptPassage!: Phaser.GameObjects.Image;
 
   constructor() {
-    super(SceneId.HouseHallway, 'hallway', 'THE HALLWAY OF PORTRAITS', 'The walls request privacy.');
+    super(SceneId.HouseHallway, 'hallway', 'The walls request privacy.');
   }
 
   protected defaultSpawn(): Position {
@@ -45,8 +45,6 @@ export class HouseHallwayScene extends HouseRoomScene {
     this.addPassage(20, 118, false, Math.PI);
     this.addPassage(160, 159, false, Math.PI / 2);
     this.unkeptPassage = this.addPassage(160, 21, true, -Math.PI / 2, stateStore.snapshot.house.unkeptDiscovered ? 1 : 0);
-    this.addObjectCaption(125, 88, 'THE PORTRAIT THAT AGREES');
-    this.addObjectCaption(221, 104, 'A FAMILY PHOTOGRAPH');
   }
 
   protected registerRoomInteractions(): void {
@@ -158,6 +156,7 @@ export class HouseHallwayScene extends HouseRoomScene {
       if (wasHidden && stateStore.snapshot.house.unkeptDiscovered) {
         this.unkeptPassage.setAlpha(1);
         audioManager.cue(AudioCue.PassageMemory);
+        hud.showMessage('Roots press against the north wall.');
         await present(houseDialogue.sproutAfterPhoto);
       }
     });

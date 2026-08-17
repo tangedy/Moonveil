@@ -1,4 +1,5 @@
 import {
+  Facing,
   PROLOGUE_GEOMETRY,
   SAVE_KEY,
   SAVE_SCHEMA_VERSION,
@@ -25,6 +26,7 @@ export interface StorageLike {
 }
 
 const validScenes = new Set<SceneName>(Object.values(SceneId));
+const validFacings = new Set(Object.values(Facing));
 const validRooms = new Set(['threshold', 'sitting-room', 'bedroom', 'hallway', 'kitchen', 'nursery', 'unkept-room']);
 const validObservations = new Set(['portrait', 'window', 'drawer']);
 const validPortraitSubjects = new Set(['woman', 'empty-chair', 'dreamer']);
@@ -36,6 +38,12 @@ const validStarOutcomes = new Set(['left', 'shared', 'remained', 'delayed']);
 
 function isNullableMember(value: unknown, values: ReadonlySet<string>): boolean {
   return value === null || (typeof value === 'string' && values.has(value));
+}
+
+function normalizeDerivedState(state: MoonveilState): MoonveilState {
+  state.house.sproutArrived = Boolean(state.house.breadInterpretation && state.house.toyInterpretation);
+  if (!state.house.sproutArrived) state.house.sproutSpoken = false;
+  return state;
 }
 
 function hasHouseShape(value: unknown): value is HouseState {
@@ -81,6 +89,8 @@ function hasBaseMoonveilShape(value: unknown, version: number): boolean {
     validScenes.has(candidate.lastSafe.scene as SceneName) &&
     typeof candidate.lastSafe.position?.x === 'number' &&
     typeof candidate.lastSafe.position?.y === 'number' &&
+    typeof candidate.facing === 'string' &&
+    validFacings.has(candidate.facing) &&
     !!candidate.steps &&
     typeof candidate.steps.real === 'number' &&
     typeof candidate.steps.phantom === 'number' &&
@@ -183,12 +193,15 @@ export class SaveService {
       if (parsed && typeof parsed === 'object') {
         const envelope = parsed as Partial<SaveEnvelope>;
         if (envelope.schema === SAVE_SCHEMA_VERSION && isMoonveilState(envelope.state)) {
-          return structuredClone(envelope.state);
+          const state = normalizeDerivedState(structuredClone(envelope.state));
+          this.save(state);
+          return state;
         }
         const migrated = migrateLegacy(parsed);
         if (migrated) {
-          this.save(migrated);
-          return migrated;
+          const state = normalizeDerivedState(migrated);
+          this.save(state);
+          return state;
         }
       }
     } catch {

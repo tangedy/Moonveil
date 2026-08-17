@@ -452,7 +452,8 @@ export class GameStateStore {
   }
 
   private arriveSprout(): void {
-    this.state.house.sproutArrived = true;
+    const house = this.state.house;
+    house.sproutArrived = Boolean(house.breadInterpretation && house.toyInterpretation);
   }
 
   private updateUnkeptDiscovery(): void {

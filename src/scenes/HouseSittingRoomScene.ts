@@ -1,6 +1,6 @@
 import { houseChoices, houseDialogue } from '../content/houseWithoutDoors';
 import { AudioCue, PALETTE, SceneId, TextureKey } from '../game/config';
-import { assetRegistry, audioManager, stateStore } from '../game/services';
+import { assetRegistry, audioManager, hud, stateStore } from '../game/services';
 import type { Position, ToyInterpretation } from '../state/GameState';
 import { HOUSE_SPAWNS, HouseRoomScene } from './HouseRoomScene';
 
@@ -9,7 +9,7 @@ export class HouseSittingRoomScene extends HouseRoomScene {
   private sproutPresent = false;
 
   constructor() {
-    super(SceneId.HouseSittingRoom, 'sitting-room', 'THE SITTING ROOM', 'The rain declines to answer for the furniture.');
+    super(SceneId.HouseSittingRoom, 'sitting-room', 'The rain declines to answer for the furniture.');
   }
 
   protected defaultSpawn(): Position {
@@ -27,15 +27,23 @@ export class HouseSittingRoomScene extends HouseRoomScene {
     g.fillStyle(PALETTE.violet, 0.24);
     for (let x = 48; x < 95; x += 8) g.lineBetween(x, 31, x - 4, 71);
 
+    g.fillStyle(PALETTE.black, 0.5);
+    g.fillRoundedRect(137, 91, 66, 36, 4);
     g.fillStyle(PALETTE.violetDark);
-    g.fillRoundedRect(132, 83, 70, 38, 4);
-    g.fillStyle(PALETTE.paper, 0.48);
-    g.fillRect(140, 91, 54, 20);
-    g.fillStyle(PALETTE.black);
-    g.fillRect(136, 116, 8, 18);
-    g.fillRect(190, 116, 8, 18);
-    g.fillStyle(PALETTE.violetLight, 0.34);
-    for (let x = 143; x <= 191; x += 12) g.fillRect(x, 79, 7, 9);
+    g.fillRoundedRect(142, 94, 50, 28, 3);
+    g.fillStyle(PALETTE.paper, 0.32);
+    g.fillRoundedRect(147, 99, 40, 18, 2);
+    g.lineStyle(1, PALETTE.violetLight, 0.32);
+    g.strokeRoundedRect(142, 94, 50, 28, 3);
+    const chairs = [[148, 84], [167, 84], [186, 84], [148, 132], [167, 132], [186, 132]] as const;
+    chairs.forEach(([x, y]) => {
+      g.fillStyle(PALETTE.black, 0.45);
+      g.fillRect(x - 5, y - 4, 12, 10);
+      g.fillStyle(PALETTE.violet, 0.52);
+      g.fillRect(x - 5, y - 5, 10, 8);
+      g.fillStyle(PALETTE.violetLight, 0.2);
+      g.fillRect(x - 4, y - 4, 8, 2);
+    });
 
     this.add.image(224, 132, assetRegistry.resolve(this, TextureKey.WoodenToy)).setDepth(10);
     this.addKeeper(257, 101);
@@ -46,8 +54,6 @@ export class HouseSittingRoomScene extends HouseRoomScene {
     this.addPassage(160, 21, false, -Math.PI / 2);
     this.toyPassage = this.addPassage(160, 159, Boolean(stateStore.snapshot.house.toyInterpretation), Math.PI / 2);
 
-    this.addObjectCaption(69, 82, 'A WINDOW WITH NO OUTSIDE');
-    this.addObjectCaption(166, 137, 'SIX CHAIRS · ONE PLACE');
     this.addCollider(167, 109, 76, 47);
   }
 
@@ -100,9 +106,10 @@ export class HouseSittingRoomScene extends HouseRoomScene {
     audioManager.cue(AudioCue.PassageMemory);
     this.checkpoint();
     await this.say(houseDialogue.toyResolved[interpretation]);
-    if (!this.sproutPresent) {
+    if (stateStore.snapshot.house.sproutArrived && !this.sproutPresent) {
       this.installSprout();
       this.registerSproutInteraction();
+      hud.showMessage('Something entered through the window.');
     }
   }
 

@@ -23,6 +23,33 @@ describe('InteractionSystem', () => {
     expect(result).toBeNull();
   });
 
+  it('accepts an adjacent diagonal target while DREAMER faces toward it', () => {
+    const result = findBestInteraction(
+      { x: 10, y: 10 },
+      Facing.Right,
+      [target({ id: 'diagonal', x: 18, y: 17 })],
+    );
+    expect(result?.id).toBe('diagonal');
+  });
+
+  it('rejects a target directly beside DREAMER when not facing it', () => {
+    const result = findBestInteraction(
+      { x: 10, y: 10 },
+      Facing.Right,
+      [target({ id: 'beside', x: 10, y: 17 })],
+    );
+    expect(result).toBeNull();
+  });
+
+  it('rejects targets beyond the short interaction reach', () => {
+    const result = findBestInteraction(
+      { x: 10, y: 10 },
+      Facing.Right,
+      [target({ id: 'far', x: 38, y: 10 })],
+    );
+    expect(result).toBeNull();
+  });
+
   it('prefers an NPC when candidates overlap', () => {
     const object = target({ id: 'flower', kind: 'object', x: 20, y: 10 });
     const npc = target({ id: 'moth', kind: 'npc', x: 21, y: 10 });

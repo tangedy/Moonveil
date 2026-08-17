@@ -30,7 +30,6 @@ export abstract class HouseRoomScene extends Phaser.Scene {
   protected constructor(
     key: SceneName,
     protected readonly roomId: HouseRoomId,
-    private readonly roomTitle: string,
     private readonly emptyMessage: string,
   ) {
     super(key);
@@ -107,6 +106,7 @@ export abstract class HouseRoomScene extends Phaser.Scene {
 
   protected addKeeper(x: number, y: number): Phaser.GameObjects.Image {
     const keeper = this.add.image(x, y, assetRegistry.resolve(this, TextureKey.Keeper0)).setDepth(25);
+    this.addCharacterCollider(x, y + 9, 13, 8);
     if (!stateStore.snapshot.preferences.reducedMotion) {
       this.tweens.add({ targets: keeper, y: y + 1, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
     }
@@ -117,6 +117,7 @@ export abstract class HouseRoomScene extends Phaser.Scene {
     const sprout = this.add.image(x, y, assetRegistry.resolve(this, TextureKey.Sprout0))
       .setDepth(24)
       .setTint(PALETTE.livingGreen);
+    this.addCharacterCollider(x, y + 7, 12, 7);
     if (!stateStore.snapshot.preferences.reducedMotion) {
       this.tweens.add({ targets: sprout, scaleY: 0.95, duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
     }
@@ -125,10 +126,15 @@ export abstract class HouseRoomScene extends Phaser.Scene {
 
   protected addMoth(x: number, y: number): Phaser.GameObjects.Image {
     const moth = this.add.image(x, y, assetRegistry.resolve(this, TextureKey.Moth0)).setDepth(24);
+    this.addCharacterCollider(x, y + 7, 12, 7);
     if (!stateStore.snapshot.preferences.reducedMotion) {
       this.tweens.add({ targets: moth, y: y + 3, duration: 1050, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
     }
     return moth;
+  }
+
+  private addCharacterCollider(x: number, y: number, width: number, height: number): void {
+    this.addCollider(x, y, width, height);
   }
 
   protected addPassage(
@@ -143,15 +149,6 @@ export abstract class HouseRoomScene extends Phaser.Scene {
       y,
       assetRegistry.resolve(this, stable ? TextureKey.PassageStable : TextureKey.PassageUnstable),
     ).setRotation(rotation).setAlpha(alpha).setDepth(8);
-  }
-
-  protected addObjectCaption(x: number, y: number, text: string): Phaser.GameObjects.Text {
-    return this.add.text(x, y, text, {
-      fontFamily: 'monospace',
-      fontSize: '5px',
-      color: '#8d5bc9',
-      letterSpacing: 1,
-    }).setOrigin(0.5).setAlpha(0.72).setDepth(3);
   }
 
   protected async say(content: readonly DialoguePage[]): Promise<void> {
@@ -235,21 +232,21 @@ export abstract class HouseRoomScene extends Phaser.Scene {
     g.fillRect(0, 0, 320, 180);
     g.fillStyle(PALETTE.violetDeep);
     g.fillRect(9, 9, 302, 162);
-    g.fillStyle(PALETTE.violetDark, 0.24);
-    g.fillRect(14, 14, 292, 125);
-    g.fillStyle(PALETTE.black, 0.55);
-    g.fillRect(14, 139, 292, 27);
-    g.lineStyle(1, PALETTE.violet, 0.16);
-    for (let x = 17; x < 305; x += 17) g.lineBetween(x, 140, x + 8, 166);
-    g.lineStyle(1, PALETTE.paper, 0.08);
-    g.strokeRect(12, 12, 296, 156);
-
-    this.add.text(18, 17, this.roomTitle, {
-      fontFamily: 'monospace',
-      fontSize: '5px',
-      color: '#c9a7f2',
-      letterSpacing: 1,
-    }).setAlpha(0.5).setDepth(3);
+    g.fillStyle(PALETTE.violetDark, 0.34);
+    g.fillRect(18, 24, 284, 136);
+    g.lineStyle(1, PALETTE.paper, 0.055);
+    for (let y = 32; y < 160; y += 12) g.lineBetween(18, y, 302, y);
+    g.lineStyle(1, PALETTE.violet, 0.12);
+    for (let x = 26; x < 302; x += 24) g.lineBetween(x, 24, x, 160);
+    g.fillStyle(PALETTE.black, 0.72);
+    g.fillRect(9, 9, 302, 15);
+    g.fillRect(9, 160, 302, 11);
+    g.fillRect(9, 9, 9, 162);
+    g.fillRect(302, 9, 9, 162);
+    g.fillStyle(PALETTE.violetLight, 0.12);
+    g.fillRect(18, 24, 284, 3);
+    g.lineStyle(1, PALETTE.paper, 0.1);
+    g.strokeRect(9, 9, 302, 162);
   }
 
   private buildBoundaryCollision(): void {
