@@ -1,14 +1,14 @@
 import Phaser from 'phaser';
 import { houseDialogue } from '../content/houseWithoutDoors';
 import { Dreamer } from '../entities/Dreamer';
-import { PALETTE, SceneId, TextureKey, type SceneId as SceneName } from '../game/config';
+import { GAME_HEIGHT, GAME_WIDTH, PALETTE, SceneId, TextureKey, type SceneId as SceneName } from '../game/config';
 import {
   assetRegistry,
   audioManager,
   dialogueOverlay,
   dialogueSystem,
   hud,
-  inventoryOverlay,
+  pauseMenuOverlay,
   saveService,
   stateStore,
 } from '../game/services';
@@ -30,6 +30,7 @@ export abstract class HouseRoomScene extends Phaser.Scene {
   protected constructor(
     key: SceneName,
     protected readonly roomId: HouseRoomId,
+    protected readonly roomTitle: string,
     private readonly emptyMessage: string,
   ) {
     super(key);
@@ -42,14 +43,12 @@ export abstract class HouseRoomScene extends Phaser.Scene {
   create(): void {
     this.transitioning = false;
     this.interactions.clear();
-    this.physics.world.setBounds(0, 0, 320, 180);
-    this.cameras.main.setBounds(0, 0, 320, 180);
+    this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);
+    this.cameras.main.setBounds(0, 0, this.worldWidth, this.worldHeight);
     this.cameras.main.setBackgroundColor(PALETTE.ink);
     audioManager.attach(this);
     audioManager.setMuted(stateStore.snapshot.preferences.muted);
     audioManager.startHouseAmbience();
-    hud.show(true);
-    hud.showHelp();
 
     this.drawRoomShell();
     this.colliders = this.physics.add.staticGroup();
@@ -63,12 +62,17 @@ export abstract class HouseRoomScene extends Phaser.Scene {
     this.requestedSpawn = null;
     this.dreamer = new Dreamer(this, start.x, start.y, stateStore, audioManager, assetRegistry, true);
     this.physics.add.collider(this.dreamer, this.colliders);
+    this.configureCamera();
 
-    inventoryOverlay.attach({
+    pauseMenuOverlay.attach({
       canOpen: () => !dialogueOverlay.isVisible && !this.transitioning,
       onVisibilityChange: (open) => this.dreamer.setInputLocked(open),
+      onSave: () => this.checkpoint(),
+      onLeaveGame: () => {
+        this.scene.start(SceneId.Launch);
+      },
     });
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => inventoryOverlay.detach());
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => pauseMenuOverlay.detach());
 
     this.registerRoomInteractions();
     stateStore.enterHouseRoom(this.roomId);
@@ -93,6 +97,16 @@ export abstract class HouseRoomScene extends Phaser.Scene {
   protected abstract defaultSpawn(): Position;
   protected abstract buildRoom(): void;
   protected abstract registerRoomInteractions(): void;
+
+  protected get worldWidth(): number {
+    return GAME_WIDTH;
+  }
+
+  protected get worldHeight(): number {
+    return GAME_HEIGHT;
+  }
+
+  protected configureCamera(): void {}
 
   protected addInteraction(target: InteractionTarget): void {
     this.interactions.add(target);
@@ -226,7 +240,7 @@ export abstract class HouseRoomScene extends Phaser.Scene {
     if (!found) hud.showMessage(this.emptyMessage);
   }
 
-  private drawRoomShell(): void {
+  protected drawRoomShell(): void {
     const g = this.add.graphics();
     g.fillStyle(PALETTE.ink);
     g.fillRect(0, 0, 320, 180);
@@ -250,15 +264,15 @@ export abstract class HouseRoomScene extends Phaser.Scene {
   }
 
   private buildBoundaryCollision(): void {
-    this.addCollider(160, 5, 320, 10);
-    this.addCollider(160, 175, 320, 10);
-    this.addCollider(5, 90, 10, 180);
-    this.addCollider(315, 90, 10, 180);
+    this.addCollider(this.worldWidth / 2, 5, this.worldWidth, 10);
+    this.addCollider(this.worldWidth / 2, this.worldHeight - 5, this.worldWidth, 10);
+    this.addCollider(5, this.worldHeight / 2, 10, this.worldHeight);
+    this.addCollider(this.worldWidth - 5, this.worldHeight / 2, 10, this.worldHeight);
   }
 }
 
 export const HOUSE_SPAWNS = {
-  [SceneId.HouseThreshold]: { left: { x: 42, y: 112 }, right: { x: 274, y: 112 } },
+  [SceneId.HouseThreshold]: { left: { x: 42, y: 112 }, right: { x: 914, y: 112 } },
   [SceneId.HouseSittingRoom]: { left: { x: 34, y: 118 }, right: { x: 286, y: 118 }, top: { x: 160, y: 42 }, bottom: { x: 160, y: 148 } },
   [SceneId.HouseBedroom]: { left: { x: 34, y: 118 }, right: { x: 286, y: 118 }, top: { x: 160, y: 42 } },
   [SceneId.HouseHallway]: { left: { x: 34, y: 118 }, bottom: { x: 160, y: 148 }, top: { x: 160, y: 42 } },

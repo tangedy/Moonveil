@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import type { AssetManifest } from '../assets/AssetRegistry';
 import menuThemeUrl from '../audio/music/as the moon gazes down upon your weary eyes - keys (128k).mp3';
+import gardenThemeUrl from '../audio/music/time_in_limbo_KLICKAUD.mp3';
+import houseThemeUrl from '../audio/music/clockwork_KLICKAUD.mp3';
 import { AudioCue, PALETTE, SceneId } from '../game/config';
 import { assetRegistry } from '../game/services';
 
@@ -12,6 +14,8 @@ export class BootScene extends Phaser.Scene {
   preload(): void {
     this.load.json('asset-manifest', 'assets/manifest.json');
     this.load.audio(`override-audio:${AudioCue.Menu}`, menuThemeUrl);
+    this.load.audio(`override-audio:${AudioCue.Garden}`, gardenThemeUrl);
+    this.load.audio(`override-audio:${AudioCue.House}`, houseThemeUrl);
   }
 
   create(): void {

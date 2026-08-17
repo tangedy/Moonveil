@@ -53,6 +53,15 @@ describe('GameStateStore', () => {
     expect(store.snapshot.steps.phantom).toBe(13);
   });
 
+  it('completes the Garden directly at the House approach spawn', () => {
+    const store = new GameStateStore();
+    const spawn = { x: 42, y: 112 };
+    store.completeSlice(SceneId.HouseThreshold, spawn);
+    expect(store.snapshot.garden.complete).toBe(true);
+    expect(store.snapshot.currentScene).toBe(SceneId.HouseThreshold);
+    expect(store.snapshot.lastSafe).toEqual({ scene: SceneId.HouseThreshold, position: spawn });
+  });
+
   it('locks the first House observation and its portrait subject', () => {
     expect(portraitSubjectFor('portrait')).toBe('woman');
     expect(portraitSubjectFor('window')).toBe('empty-chair');

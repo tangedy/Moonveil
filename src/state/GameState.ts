@@ -432,10 +432,10 @@ export class GameStateStore {
     this.emit();
   }
 
-  completeSlice(): void {
+  completeSlice(nextScene: SceneName, position: Position): void {
     this.state.garden.complete = true;
-    this.state.currentScene = SceneId.SliceEnd;
-    this.state.lastSafe = { scene: SceneId.SliceEnd, position: { x: 160, y: 90 } };
+    this.state.currentScene = nextScene;
+    this.state.lastSafe = { scene: nextScene, position: { ...position } };
     this.emit();
   }
 

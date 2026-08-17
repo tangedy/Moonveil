@@ -22,8 +22,9 @@ Requirements: Node.js 20.19 or newer.
 - Sprint: Shift
 - Interact/advance: Z, Enter, or Space
 - Dialogue choices: Up/Down and Z/Enter/Space, or mouse
-- Open/close POCKET: I (X or Escape also closes it)
-- Sound and reduced-motion toggles appear in the upper-right corner
+- Open/close menu: Escape
+- Open the menu directly to Inventory: I
+- Steps, sound, calm mode, controls, manual save, and leave-to-title are available in the menu
 
 Movement is continuous and pixel-based, not tile-locked. Diagonal speed is normalized, collision is resolved by Phaser Arcade Physics, facing remains four-directional, and the step counter derives steps from actual distance traveled.
 

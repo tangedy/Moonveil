@@ -8,13 +8,14 @@ import {
   dialogueOverlay,
   dialogueSystem,
   hud,
-  inventoryOverlay,
+  pauseMenuOverlay,
   saveService,
   stateStore,
 } from '../game/services';
 import { playCameraIntro } from '../systems/CameraIntro';
 import { InteractionSystem } from '../systems/InteractionSystem';
 import { projectInsideEllipse, reflectionFeetRotation } from '../systems/PondReflection';
+import { HOUSE_SPAWNS } from './HouseRoomScene';
 
 const POND = { centerX: 350, centerY: 218, radiusX: 67, radiusY: 37 } as const;
 const REFLECTION_SCALE_X = 0.82;
@@ -55,8 +56,6 @@ export class VioletGardenScene extends Phaser.Scene {
     audioManager.attach(this);
     audioManager.setMuted(stateStore.snapshot.preferences.muted);
     audioManager.startGardenAmbience();
-    hud.show(true);
-    hud.showHelp();
 
     this.drawGarden();
     this.colliders = this.physics.add.staticGroup();
@@ -69,11 +68,15 @@ export class VioletGardenScene extends Phaser.Scene {
     this.dreamer = new Dreamer(this, start.x, start.y, stateStore, audioManager, assetRegistry, true);
     this.physics.add.collider(this.dreamer, this.colliders);
     this.dreamer.setInputLocked(true);
-    inventoryOverlay.attach({
+    pauseMenuOverlay.attach({
       canOpen: () => !dialogueOverlay.isVisible && !this.transitioning,
       onVisibilityChange: (open) => this.dreamer.setInputLocked(open),
+      onSave: () => this.checkpoint(),
+      onLeaveGame: () => {
+        this.scene.start(SceneId.Launch);
+      },
     });
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => inventoryOverlay.detach());
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => pauseMenuOverlay.detach());
 
     this.registerInteractions();
     this.syncConsequenceState();
@@ -104,7 +107,9 @@ export class VioletGardenScene extends Phaser.Scene {
     this.updateReflection();
 
     if (!stateStore.snapshot.garden.starTaken) {
-      audioManager.setStarDistance(Phaser.Math.Distance.Between(this.dreamer.x, this.dreamer.y, this.star.x, this.star.y));
+      const distance = Phaser.Math.Distance.Between(this.dreamer.x, this.dreamer.y, this.star.x, this.star.y);
+      audioManager.setStarDistance(distance);
+      audioManager.setGardenDistance(distance);
     }
   }
 
@@ -318,6 +323,7 @@ export class VioletGardenScene extends Phaser.Scene {
     this.transitioning = false;
     this.dreamer.setInputLocked(false);
     await this.say(gardenDialogue.starTaken);
+    audioManager.restoreGardenVolume();
   }
 
   private createNightmareOverlay(): Phaser.GameObjects.Container {
@@ -414,12 +420,13 @@ export class VioletGardenScene extends Phaser.Scene {
     this.dreamer.setInputLocked(true);
     await this.say(gardenDialogue.archOpen);
     this.dreamer.setInputLocked(true);
-    stateStore.completeSlice();
+    const spawn = HOUSE_SPAWNS[SceneId.HouseThreshold].left;
+    stateStore.completeSlice(SceneId.HouseThreshold, spawn);
     saveService.save(stateStore.snapshot);
     audioManager.stopAmbience();
     this.cameras.main.fadeOut(900, 255, 250, 242);
     await this.wait(920);
-    this.scene.start(SceneId.SliceEnd);
+    this.scene.start(SceneId.HouseThreshold, { spawn });
   }
 
   private say(pages: readonly { speaker?: string; text: string }[]): Promise<string | undefined> {

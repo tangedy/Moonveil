@@ -31,6 +31,7 @@ declare global {
           breadInterpretation: string | null;
           toyInterpretation: string | null;
           keeperMet: boolean;
+          thresholdMothSpoken: boolean;
           mothHistoryHeard: boolean;
           sproutArrived: boolean;
           sproutSpoken: boolean;
@@ -194,7 +195,8 @@ test('starts a new dream and moves continuously', async ({ page }) => {
   await page.waitForTimeout(100);
   expect(await page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Prologue');
-  await expect(page.locator('#step-counter')).toContainText('STEPS 0000');
+  await expect(page.locator('#pause-menu')).toBeHidden();
+  await expect(page.locator('#step-counter')).toHaveCount(0);
 
   const introStart = await page.evaluate(() => window.__MOONVEIL__?.view());
   expect(introStart?.camera?.scrollY).toBe(-90);
@@ -455,6 +457,43 @@ test('Moth questions stay under the active line and reveal the path', async ({ p
   await expect(dialogue).toBeHidden();
 });
 
+test('Escape menu holds steps, settings, controls, saving, and leaving', async ({ page }) => {
+  await continueInGarden(page, { x: 54, y: 302 }, 'down');
+  const before = await page.evaluate(() => window.__MOONVEIL__?.view().player);
+
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#pause-menu')).toBeVisible();
+  await expect(page.locator('#pause-step-counter')).toContainText('STEPS');
+  await page.keyboard.down('d');
+  await page.waitForTimeout(220);
+  await page.keyboard.up('d');
+  expect(await page.evaluate(() => window.__MOONVEIL__?.view().player)).toMatchObject(before ?? {});
+
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#pause-menu')).toBeHidden();
+  await page.keyboard.press('Escape');
+  await page.locator('[data-pause-tab="settings"]').click();
+  await page.locator('#pause-sound-toggle').click();
+  await page.locator('#pause-calm-toggle').click();
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.state().preferences.muted)).toBe(true);
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.state().preferences.reducedMotion)).toBe(false);
+
+  await page.locator('[data-pause-tab="controls"]').click();
+  await expect(page.locator('#pause-panel-controls')).toContainText('ARROWS / WASD');
+  await page.locator('[data-pause-tab="save"]').click();
+  await page.locator('#pause-save').click();
+  await expect(page.locator('#pause-save-status')).toHaveText('THE DREAM IS HELD.');
+  await expect.poll(() => page.evaluate(() => {
+    const raw = localStorage.getItem('moonveil.save.v1');
+    return raw ? JSON.parse(raw).state.lastSafe.scene : null;
+  })).toBe('VioletGarden');
+
+  await page.locator('[data-pause-tab="leave"]').click();
+  await page.locator('#pause-leave').click();
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
+  await expect(page.locator('#pause-menu')).toBeHidden();
+});
+
 test('garden grass feedback and POCKET inventory behave like the demo', async ({ page }) => {
   await continueInGarden(page, { x: 54, y: 302 }, 'down');
 
@@ -464,14 +503,15 @@ test('garden grass feedback and POCKET inventory behave like the demo', async ({
 
   const before = await page.evaluate(() => window.__MOONVEIL__?.view().player);
   await page.keyboard.press('i');
-  await expect(page.locator('#inventory')).toBeVisible();
+  await expect(page.locator('#pause-menu')).toBeVisible();
+  await expect(page.locator('[data-pause-tab="inventory"]')).toHaveAttribute('aria-selected', 'true');
   await expect(page.locator('.inventory-item-name')).toHaveText(['Soft Candy']);
-  await page.keyboard.down('ArrowRight');
+  await page.keyboard.down('d');
   await page.waitForTimeout(260);
-  await page.keyboard.up('ArrowRight');
+  await page.keyboard.up('d');
   expect(await page.evaluate(() => window.__MOONVEIL__?.view().player)).toMatchObject(before ?? {});
   await page.keyboard.press('i');
-  await expect(page.locator('#inventory')).toBeHidden();
+  await expect(page.locator('#pause-menu')).toBeHidden();
 });
 
 test('pond starts with the reflection line', async ({ page }) => {
@@ -504,21 +544,55 @@ test('Sleeping Star is taken without a choice and appears in POCKET', async ({ p
   await page.waitForTimeout(130);
   await page.keyboard.press('Enter');
   await page.keyboard.press('i');
-  await expect(page.locator('#inventory')).toBeVisible();
+  await expect(page.locator('#pause-menu')).toBeVisible();
   await expect(page.locator('.inventory-item-name')).toHaveText(['Soft Candy', 'Sleeping Star']);
 });
 
 test('preferences and progress persist in the single save slot', async ({ page }) => {
-  await page.keyboard.press('Enter');
-  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Prologue');
-  await page.locator('#mute-toggle').click();
+  await continueInGarden(page, { x: 54, y: 302 }, 'down');
+  await page.keyboard.press('Escape');
+  await page.locator('[data-pause-tab="settings"]').click();
+  await page.locator('#pause-sound-toggle').click();
   await page.goto('/');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
   await page.keyboard.press('Enter');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.state().preferences.muted)).toBe(true);
 });
 
-test('Garden completion offers a House interlude continuation', async ({ page }) => {
+test('the Garden arch continues directly into the House approach', async ({ page }) => {
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Prologue');
+  await page.evaluate(() => {
+    const state = window.__MOONVEIL__?.state();
+    if (!state) throw new Error('Moonveil state is unavailable');
+    const seeded = {
+      ...state,
+      currentScene: 'VioletGarden',
+      lastSafe: { scene: 'VioletGarden', position: { x: 566, y: 61 } },
+      garden: {
+        ...state.garden,
+        starTaken: true,
+        consequenceResolved: true,
+        archUnlocked: true,
+      },
+      preferences: { ...state.preferences, reducedMotion: true, textSpeed: 'fast' },
+    };
+    localStorage.setItem('moonveil.save.v1', JSON.stringify({ schema: 4, savedAt: Date.now(), state: seeded }));
+  });
+  await page.goto('/');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.locator('#dialogue-text').textContent()).toBe('Beyond the arch, something is becoming morning.');
+  await finishDialogue(page);
+  await expect.poll(
+    () => page.evaluate(() => window.__MOONVEIL__?.scene()),
+    { timeout: 3_000 },
+  ).toBe('HouseThreshold');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.view().player?.x)).toBeCloseTo(42, 0);
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.state().garden.complete)).toBe(true);
+});
+
+test('legacy Garden interlude saves skip the removed menu', async ({ page }) => {
   await page.keyboard.press('Enter');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Prologue');
   await page.evaluate(() => {
@@ -536,13 +610,42 @@ test('Garden completion offers a House interlude continuation', async ({ page })
   await page.goto('/');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
   await page.keyboard.press('Enter');
-  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('SliceEnd');
-  await page.keyboard.press('Enter');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('HouseThreshold');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.view().player?.x)).toBeCloseTo(42, 0);
+});
+
+test('Moth follows along the approach and resumes responsible-distance dialogue at the House', async ({ page }) => {
+  await continueInHouse(page, 'HouseThreshold', 'threshold', { x: 42, y: 112 }, { keeperMet: false }, 'right');
+  await page.keyboard.down('d');
+  await page.waitForTimeout(1_400);
+  await page.keyboard.up('d');
+  await tapGameKey(page, 'a');
+  await tapGameKey(page, 'z');
+  await expect(page.locator('#dialogue-text')).toHaveText('Everything feels familiar.');
+  await finishDialogue(page);
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.state().garden.mothAfterStarStep)).toBe(1);
+
+  await page.evaluate(() => {
+    const state = window.__MOONVEIL__?.state();
+    if (!state) throw new Error('Moonveil state is unavailable');
+    const seeded = {
+      ...state,
+      currentScene: 'HouseThreshold',
+      lastSafe: { scene: 'HouseThreshold', position: { x: 718, y: 111 } },
+      facing: 'left',
+      house: { ...state.house, thresholdMothSpoken: false },
+    };
+    localStorage.setItem('moonveil.save.v1', JSON.stringify({ schema: 4, savedAt: Date.now(), state: seeded }));
+  });
+  await reloadAndContinue(page, 'HouseThreshold');
+  await tapGameKey(page, 'z');
+  await expect(page.locator('#dialogue-text')).toHaveText('The House remembers me incorrectly.');
+  await finishDialogue(page);
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.state().house.thresholdMothSpoken)).toBe(true);
 });
 
 test('Keeper conversations begin only on interaction and advance one conversation at a time', async ({ page }) => {
-  await continueInHouse(page, 'HouseThreshold', 'threshold', { x: 195, y: 105 }, {}, 'right');
+  await continueInHouse(page, 'HouseThreshold', 'threshold', { x: 835, y: 105 }, {}, 'right');
   await expect(page.locator('#dialogue')).toBeHidden();
 
   await tapGameKey(page, 'z');
