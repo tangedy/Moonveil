@@ -488,7 +488,6 @@ test('Escape menu holds steps, settings, controls, saving, and leaving', async (
     return raw ? JSON.parse(raw).state.lastSafe.scene : null;
   })).toBe('VioletGarden');
 
-  await page.locator('[data-pause-tab="leave"]').click();
   await page.locator('#pause-leave').click();
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
   await expect(page.locator('#pause-menu')).toBeHidden();

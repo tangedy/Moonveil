@@ -218,24 +218,10 @@ button { font: inherit; }
 .pause-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   border-bottom: 2px solid #8d5bc9;
   padding: clamp(11px, 1.7vw, 18px) clamp(14px, 2vw, 22px);
   background: rgba(8, 5, 13, 0.54);
-}
-
-.pause-header h2 {
-  margin: 0;
-  font-family: 'Quicksand', sans-serif;
-  font-size: clamp(16px, 2.4vw, 25px);
-  letter-spacing: 0.24em;
-}
-
-.pause-kicker {
-  margin: 0 0 3px;
-  color: #c9a7f2;
-  font-size: clamp(6px, 0.85vw, 9px);
-  letter-spacing: 0.18em;
 }
 
 .pause-summary {
@@ -267,7 +253,7 @@ button { font: inherit; }
 
 .pause-tabs {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   border-bottom: 2px solid #8d5bc9;
   background: #08050d;
 }
@@ -307,15 +293,6 @@ button { font: inherit; }
 }
 
 .pause-tab-panel { min-height: 100%; }
-
-.pause-section-title {
-  margin: 0 0 12px;
-  color: #c9a7f2;
-  font-family: 'Quicksand', sans-serif;
-  font-size: clamp(10px, 1.45vw, 15px);
-  font-weight: 650;
-  letter-spacing: 0.16em;
-}
 
 .inventory-items { display: grid; gap: 8px; }
 
@@ -436,7 +413,7 @@ button { font: inherit; }
   text-align: center;
 }
 
-.pause-action-panel > p:not(.pause-section-title, .pause-status) {
+.pause-action-panel > p:not(.pause-status) {
   max-width: 420px;
   color: #c9a7f2;
   font-size: clamp(8px, 1.15vw, 12px);
@@ -444,6 +421,12 @@ button { font: inherit; }
 }
 
 .pause-action { margin-top: 10px; }
+
+.pause-action-divider {
+  width: min(280px, 70%);
+  border-top: 1px solid rgba(141, 91, 201, 0.65);
+  margin: 18px 0 7px;
+}
 
 .pause-action-danger {
   border-color: #c9a7f2;

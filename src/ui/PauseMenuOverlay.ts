@@ -3,7 +3,7 @@ import type { GameStateStore, MoonveilState } from '../state/GameState';
 import type { SaveService } from '../state/SaveService';
 import { formatSteps } from '../systems/StepCounter';
 
-type PauseTab = 'inventory' | 'settings' | 'controls' | 'save' | 'leave';
+type PauseTab = 'inventory' | 'settings' | 'controls' | 'save';
 
 interface PauseMenuContext {
   canOpen: () => boolean;
@@ -137,7 +137,7 @@ export class PauseMenuOverlay {
       button.setAttribute('aria-selected', String(selected));
       button.tabIndex = selected ? 0 : -1;
     });
-    (['inventory', 'settings', 'controls', 'save', 'leave'] as const).forEach((name) => {
+    (['inventory', 'settings', 'controls', 'save'] as const).forEach((name) => {
       const selected = name === tab;
       const panel = this.getTabPanel(name);
       panel.classList.toggle('is-hidden', !selected);
@@ -150,7 +150,7 @@ export class PauseMenuOverlay {
   private navigateTabs(event: KeyboardEvent, current: PauseTab): void {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
-    const names: PauseTab[] = ['inventory', 'settings', 'controls', 'save', 'leave'];
+    const names: PauseTab[] = ['inventory', 'settings', 'controls', 'save'];
     const currentIndex = names.indexOf(current);
     const nextIndex = event.key === 'Home'
       ? 0

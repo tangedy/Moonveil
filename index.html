@@ -19,12 +19,8 @@
         </section>
         <div id="hud-message" class="hud-message is-hidden" role="status" aria-live="polite"></div>
         <div id="pause-menu" class="pause-menu is-hidden" aria-hidden="true">
-          <section id="pause-panel" class="pause-panel" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+          <section id="pause-panel" class="pause-panel" role="dialog" aria-modal="true" aria-label="Pause menu">
             <header class="pause-header">
-              <div>
-                <p class="pause-kicker">THE DREAM WAITS</p>
-                <h2 id="pause-title">MOONVEIL</h2>
-              </div>
               <div class="pause-summary">
                 <span id="pause-step-counter">STEPS 0000</span>
                 <button id="pause-close" class="pause-close" type="button" aria-label="Close menu">×</button>
@@ -35,18 +31,15 @@
               <button class="pause-tab" type="button" role="tab" data-pause-tab="inventory">INVENTORY</button>
               <button class="pause-tab" type="button" role="tab" data-pause-tab="settings">SETTINGS</button>
               <button class="pause-tab" type="button" role="tab" data-pause-tab="controls">CONTROLS</button>
-              <button class="pause-tab" type="button" role="tab" data-pause-tab="save">SAVE</button>
-              <button class="pause-tab" type="button" role="tab" data-pause-tab="leave">LEAVE</button>
+              <button class="pause-tab" type="button" role="tab" data-pause-tab="save">SAVE / LEAVE</button>
             </nav>
 
             <div class="pause-content">
               <section id="pause-panel-inventory" class="pause-tab-panel" role="tabpanel">
-                <p class="pause-section-title">WHAT YOU CARRY</p>
                 <div id="inventory-items" class="inventory-items"></div>
               </section>
 
               <section id="pause-panel-settings" class="pause-tab-panel is-hidden" role="tabpanel">
-                <p class="pause-section-title">HOW THE DREAM MOVES</p>
                 <div class="pause-option">
                   <div><strong>SOUND</strong><span>Music, ambience, and voices.</span></div>
                   <button id="pause-sound-toggle" class="pause-toggle" type="button" aria-pressed="false">ON</button>
@@ -58,7 +51,6 @@
               </section>
 
               <section id="pause-panel-controls" class="pause-tab-panel is-hidden" role="tabpanel">
-                <p class="pause-section-title">HOW TO MOVE THROUGH</p>
                 <dl class="controls-list">
                   <div><dt>MOVE</dt><dd>ARROWS / WASD</dd></div>
                   <div><dt>SPRINT</dt><dd>SHIFT</dd></div>
@@ -69,14 +61,10 @@
               </section>
 
               <section id="pause-panel-save" class="pause-tab-panel is-hidden pause-action-panel" role="tabpanel">
-                <p class="pause-section-title">HOLD THIS MOMENT</p>
                 <p>Save your current place in this browser.</p>
                 <button id="pause-save" class="pause-action" type="button">SAVE DREAM</button>
                 <p id="pause-save-status" class="pause-status" role="status" aria-live="polite"></p>
-              </section>
-
-              <section id="pause-panel-leave" class="pause-tab-panel is-hidden pause-action-panel" role="tabpanel">
-                <p class="pause-section-title">STEP OUTSIDE</p>
+                <div class="pause-action-divider" aria-hidden="true"></div>
                 <p>Your current place will be saved before returning to the title.</p>
                 <button id="pause-leave" class="pause-action pause-action-danger" type="button">SAVE &amp; LEAVE GAME</button>
               </section>

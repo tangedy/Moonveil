@@ -53,12 +53,6 @@ export class LaunchScene extends Phaser.Scene {
       color: '#fffaf2',
       letterSpacing: 4,
     }).setOrigin(0.5);
-    this.add.text(160, 93, 'a small dream', {
-      fontFamily: 'monospace',
-      fontSize: '6px',
-      color: '#8d5bc9',
-      letterSpacing: 1,
-    }).setOrigin(0.5);
 
     const savedState = saveService.load();
     const continueButton = savedState ? this.makeButton(160, 121, 'CONTINUE', async () => {
