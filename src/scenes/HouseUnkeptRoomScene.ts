@@ -11,7 +11,7 @@ export class HouseUnkeptRoomScene extends HouseRoomScene {
   private exitPassage!: Phaser.GameObjects.Image;
 
   constructor() {
-    super(SceneId.HouseUnkeptRoom, 'unkept-room', 'Nothing here has decided what it used to be.');
+    super(SceneId.HouseUnkeptRoom, 'unkept-room', 'THE UNKEPT ROOM', 'Nothing here has decided what it used to be.');
   }
 
   protected defaultSpawn(): Position {
@@ -45,6 +45,7 @@ export class HouseUnkeptRoomScene extends HouseRoomScene {
       .setDepth(12);
     this.addPassage(160, 159, true, Math.PI / 2);
     this.exitPassage = this.addPassage(300, 116, true, 0, stateStore.snapshot.house.exitOpened ? 1 : 0);
+    this.addObjectCaption(153, 148, 'A PLACE WITHOUT A BEFORE');
     this.addCollider(95, 91, 99, 58);
     this.addCollider(238, 83, 53, 69);
   }

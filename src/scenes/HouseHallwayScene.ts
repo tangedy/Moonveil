@@ -11,7 +11,7 @@ export class HouseHallwayScene extends HouseRoomScene {
   private unkeptPassage!: Phaser.GameObjects.Image;
 
   constructor() {
-    super(SceneId.HouseHallway, 'hallway', 'The walls request privacy.');
+    super(SceneId.HouseHallway, 'hallway', 'THE HALLWAY OF PORTRAITS', 'The walls request privacy.');
   }
 
   protected defaultSpawn(): Position {
@@ -45,6 +45,8 @@ export class HouseHallwayScene extends HouseRoomScene {
     this.addPassage(20, 118, false, Math.PI);
     this.addPassage(160, 159, false, Math.PI / 2);
     this.unkeptPassage = this.addPassage(160, 21, true, -Math.PI / 2, stateStore.snapshot.house.unkeptDiscovered ? 1 : 0);
+    this.addObjectCaption(125, 88, 'THE PORTRAIT THAT AGREES');
+    this.addObjectCaption(221, 104, 'A FAMILY PHOTOGRAPH');
   }
 
   protected registerRoomInteractions(): void {

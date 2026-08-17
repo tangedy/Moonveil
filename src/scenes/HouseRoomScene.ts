@@ -165,6 +165,15 @@ export abstract class HouseRoomScene extends Phaser.Scene {
     ).setRotation(rotation).setAlpha(alpha).setDepth(8);
   }
 
+  protected addObjectCaption(x: number, y: number, text: string): Phaser.GameObjects.Text {
+    return this.add.text(x, y, text, {
+      fontFamily: 'monospace',
+      fontSize: '5px',
+      color: '#8d5bc9',
+      letterSpacing: 1,
+    }).setOrigin(0.5).setAlpha(0.72).setDepth(3);
+  }
+
   protected async say(content: readonly DialoguePage[]): Promise<void> {
     await dialogueSystem.run(content, (locked) => this.dreamer.setInputLocked(locked));
   }
@@ -261,6 +270,13 @@ export abstract class HouseRoomScene extends Phaser.Scene {
     g.fillRect(18, 24, 284, 3);
     g.lineStyle(1, PALETTE.paper, 0.1);
     g.strokeRect(9, 9, 302, 162);
+
+    this.add.text(18, 17, this.roomTitle, {
+      fontFamily: 'monospace',
+      fontSize: '5px',
+      color: '#c9a7f2',
+      letterSpacing: 1,
+    }).setAlpha(0.5).setDepth(3);
   }
 
   private buildBoundaryCollision(): void {

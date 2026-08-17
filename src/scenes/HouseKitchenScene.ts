@@ -1,11 +1,14 @@
 import { houseDialogue } from '../content/houseWithoutDoors';
 import { PALETTE, SceneId } from '../game/config';
+import { stateStore } from '../game/services';
 import type { Position } from '../state/GameState';
 import { HOUSE_SPAWNS, HouseRoomScene } from './HouseRoomScene';
 
 export class HouseKitchenScene extends HouseRoomScene {
+  private sproutPresent = false;
+
   constructor() {
-    super(SceneId.HouseKitchen, 'kitchen', 'The meal continues being warm at you.');
+    super(SceneId.HouseKitchen, 'kitchen', 'THE KITCHEN', 'The meal continues being warm at you.');
   }
 
   protected defaultSpawn(): Position {
@@ -39,7 +42,10 @@ export class HouseKitchenScene extends HouseRoomScene {
     g.lineBetween(270, 91, 278, 91);
 
     this.addKeeper(256, 139);
+    if (stateStore.snapshot.house.sproutArrived) this.installSprout();
     this.addPassage(20, 116, true, Math.PI);
+    this.addObjectCaption(152, 137, 'SIX PLACES · SEVEN PLATES');
+    this.addObjectCaption(259, 115, 'BROKEN CORRECTLY');
     this.addCollider(152, 98, 154, 68);
     this.addCollider(261, 98, 34, 34);
   }
@@ -56,6 +62,26 @@ export class HouseKitchenScene extends HouseRoomScene {
       y: 139,
       radius: 10,
       interact: () => this.talkToRoomKeeper(houseDialogue.kitchenArrival, houseDialogue.breadAfter),
+    });
+    if (this.sproutPresent) this.registerSproutInteraction();
+  }
+
+  private installSprout(): void {
+    if (this.sproutPresent) return;
+    this.sproutPresent = true;
+    this.addSprout(58, 139);
+  }
+
+  private registerSproutInteraction(): void {
+    this.addInteraction({
+      id: 'kitchen-sprout',
+      kind: 'npc',
+      x: 58,
+      y: 139,
+      radius: 10,
+      interact: () => this.talkToHouseSprout(
+        stateStore.snapshot.house.starOutcome ? houseDialogue.sproutAfterPhoto : houseDialogue.sproutRepeat,
+      ),
     });
   }
 }

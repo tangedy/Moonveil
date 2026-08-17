@@ -559,7 +559,7 @@ test('preferences and progress persist in the single save slot', async ({ page }
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.state().preferences.muted)).toBe(true);
 });
 
-test('the Garden arch continues directly into the House approach', async ({ page }) => {
+test('interacting with the Garden arch continues directly into the House approach', async ({ page }) => {
   await page.keyboard.press('Enter');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Prologue');
   await page.evaluate(() => {
@@ -582,6 +582,9 @@ test('the Garden arch continues directly into the House approach', async ({ page
   await page.goto('/');
   await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('Launch');
   await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => window.__MOONVEIL__?.scene())).toBe('VioletGarden');
+  await page.waitForTimeout(240);
+  await tapGameKey(page, 'z');
   await expect.poll(() => page.locator('#dialogue-text').textContent()).toBe('Beyond the arch, something is becoming morning.');
   await finishDialogue(page);
   await expect.poll(

@@ -10,7 +10,7 @@ export class HouseBedroomScene extends HouseRoomScene {
   private sproutPresent = false;
 
   constructor() {
-    super(SceneId.HouseBedroom, 'bedroom', 'The sheets pretend to be asleep.');
+    super(SceneId.HouseBedroom, 'bedroom', 'THE UNUSED BEDROOM', 'The sheets pretend to be asleep.');
   }
 
   protected defaultSpawn(): Position {
@@ -48,6 +48,8 @@ export class HouseBedroomScene extends HouseRoomScene {
     this.addPassage(20, 116, true, Math.PI);
     this.kitchenPassage = this.addPassage(300, 116, Boolean(stateStore.snapshot.house.breadInterpretation));
     this.addPassage(160, 21, false, -Math.PI / 2);
+    this.addObjectCaption(136, 139, 'NEVER SLEPT IN');
+    this.addObjectCaption(270, 52, 'WARM BREAD · NO KITCHEN');
     this.addCollider(136, 102, 120, 68);
     this.addCollider(248, 100, 59, 54);
   }

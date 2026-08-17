@@ -9,7 +9,7 @@ export class HouseSittingRoomScene extends HouseRoomScene {
   private sproutPresent = false;
 
   constructor() {
-    super(SceneId.HouseSittingRoom, 'sitting-room', 'The rain declines to answer for the furniture.');
+    super(SceneId.HouseSittingRoom, 'sitting-room', 'THE SITTING ROOM', 'The rain declines to answer for the furniture.');
   }
 
   protected defaultSpawn(): Position {
@@ -54,6 +54,8 @@ export class HouseSittingRoomScene extends HouseRoomScene {
     this.addPassage(160, 21, false, -Math.PI / 2);
     this.toyPassage = this.addPassage(160, 159, Boolean(stateStore.snapshot.house.toyInterpretation), Math.PI / 2);
 
+    this.addObjectCaption(69, 82, 'A WINDOW WITH NO OUTSIDE');
+    this.addObjectCaption(166, 137, 'SIX CHAIRS · ONE PLACE');
     this.addCollider(167, 109, 76, 47);
   }
 

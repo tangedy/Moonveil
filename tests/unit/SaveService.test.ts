@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SAVE_KEY } from '../../src/game/config';
-import { GameStateStore } from '../../src/state/GameState';
+import { GameStateStore, createDefaultState } from '../../src/state/GameState';
 import { SaveService, type StorageLike } from '../../src/state/SaveService';
 
 class MemoryStorage implements StorageLike {
@@ -36,6 +36,17 @@ describe('SaveService', () => {
 
     expect(saves.load()?.house.sproutArrived).toBe(false);
     expect(saves.load()?.house.sproutSpoken).toBe(false);
+  });
+
+  it('moves the legacy threshold return spawn to the expanded House side', () => {
+    const storage = new MemoryStorage();
+    const saves = new SaveService(storage);
+    const state = createDefaultState();
+    state.currentScene = 'HouseThreshold';
+    state.lastSafe = { scene: 'HouseThreshold', position: { x: 274, y: 112 } };
+    saves.save(state);
+
+    expect(saves.load()?.lastSafe.position).toEqual({ x: 914, y: 112 });
   });
 
   it('rejects saves with an invalid interaction facing', () => {

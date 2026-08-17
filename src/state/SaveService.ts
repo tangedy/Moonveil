@@ -43,6 +43,13 @@ function isNullableMember(value: unknown, values: ReadonlySet<string>): boolean 
 function normalizeDerivedState(state: MoonveilState): MoonveilState {
   state.house.sproutArrived = Boolean(state.house.breadInterpretation && state.house.toyInterpretation);
   if (!state.house.sproutArrived) state.house.sproutSpoken = false;
+  if (
+    state.currentScene === SceneId.HouseThreshold &&
+    state.lastSafe.scene === SceneId.HouseThreshold &&
+    Math.abs(state.lastSafe.position.x - 274) < 0.01
+  ) {
+    state.lastSafe.position.x = 914;
+  }
   return state;
 }
 
