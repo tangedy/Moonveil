@@ -1,5 +1,6 @@
 import type Phaser from 'phaser';
 import { AudioCue, type AudioCue as Cue } from '../game/config';
+import menuThemeUrl from './music/as the moon gazes down upon your weary eyes - keys (128k).mp3';
 
 interface ToneDefinition {
   frequency: number;
@@ -35,7 +36,13 @@ export class AudioManager {
   private ambienceNodes: OscillatorNode[] = [];
   private ambienceGains: GainNode[] = [];
   private ambienceTargets: number[] = [];
-  private menuSound: VolumeSound | null = null;
+  private menuElement: HTMLAudioElement | null = null;
+  private menuDesired = false;
+  private gestureArmed = false;
+  private readonly onUserGesture = (): void => {
+    void this.unlock();
+    if (this.menuDesired) this.startMenuMusic();
+  };
   private gardenSound: VolumeSound | null = null;
   private houseSound: VolumeSound | null = null;
   private houseAmbienceActive = false;
@@ -51,9 +58,10 @@ export class AudioManager {
   }
 
   async unlock(): Promise<void> {
-    const AudioContextConstructor = window.AudioContext ?? window.webkitAudioContext;
-    if (!this.context) this.context = new AudioContextConstructor();
-    if (this.context.state === 'suspended') await this.context.resume();
+    await this.resumeContext(this.ensureContext());
+    const phaserSound = this.scene?.sound as unknown as { context?: AudioContext; unlock?: () => void } | undefined;
+    if (phaserSound?.context) await this.resumeContext(phaserSound.context);
+    phaserSound?.unlock?.();
   }
 
   setMuted(muted: boolean): void {
@@ -61,11 +69,12 @@ export class AudioManager {
     this.ambienceGains.forEach((gain, index) => {
       gain.gain.setTargetAtTime(muted ? 0 : (this.ambienceTargets[index] ?? 0.003), gain.context.currentTime, 0.08);
     });
-    this.menuSound?.setVolume(muted ? 0 : 0.38);
+    if (this.menuElement) this.menuElement.volume = muted ? 0 : 0.38;
     this.gardenSound?.setVolume(muted ? 0 : this.currentGardenVolume);
     this.houseSound?.setVolume(muted ? 0 : 0.14);
     this.starSound?.setVolume(muted ? 0 : this.starVolume);
     if (this.starGain) this.starGain.gain.setTargetAtTime(muted ? 0 : this.starVolume, this.starGain.context.currentTime, 0.05);
+    if (!muted && this.menuDesired) this.startMenuMusic();
   }
 
   cue(cue: Cue): void {
@@ -107,12 +116,16 @@ export class AudioManager {
   }
 
   startMenuMusic(): void {
-    const overrideKey = `override-audio:${AudioCue.Menu}`;
-    if (!this.scene?.cache.audio.exists(overrideKey)) return;
-    if (this.menuSound?.isPlaying) return;
-    this.stopAmbience();
-    this.menuSound = this.scene.sound.add(overrideKey, { loop: true, volume: this.muted ? 0 : 0.38 }) as VolumeSound;
-    this.menuSound.play();
+    this.menuDesired = true;
+    this.stopGameplayAmbience();
+    const element = this.ensureMenuElement();
+    if (!element) return;
+    element.volume = this.muted ? 0 : 0.38;
+    if (!element.paused) {
+      this.disarmGestureUnlock();
+      return;
+    }
+    void this.tryPlayMenu(element);
   }
 
   startGardenAmbience(): void {
@@ -216,9 +229,77 @@ export class AudioManager {
   }
 
   stopAmbience(): void {
-    this.menuSound?.stop();
-    this.menuSound?.destroy();
-    this.menuSound = null;
+    this.menuDesired = false;
+    this.stopMenuMusic();
+    this.stopGameplayAmbience();
+  }
+
+  private ensureContext(): AudioContext {
+    if (!this.context) {
+      const AudioContextConstructor = window.AudioContext ?? window.webkitAudioContext;
+      this.context = new AudioContextConstructor();
+    }
+    return this.context;
+  }
+
+  private async resumeContext(context: AudioContext): Promise<void> {
+    if (context.state !== 'suspended') return;
+    try {
+      await context.resume();
+    } catch {
+      // Browsers reject resume() until they have a user gesture.
+    }
+  }
+
+  private ensureMenuElement(): HTMLAudioElement | null {
+    if (this.menuElement) return this.menuElement;
+    if (typeof Audio === 'undefined') return null;
+    const element = new Audio(menuThemeUrl);
+    element.loop = true;
+    element.autoplay = true;
+    element.preload = 'auto';
+    element.setAttribute('playsinline', '');
+    element.setAttribute('aria-hidden', 'true');
+    element.volume = this.muted ? 0 : 0.38;
+    if (typeof document !== 'undefined') document.body?.appendChild(element);
+    this.menuElement = element;
+    return element;
+  }
+
+  private async tryPlayMenu(element: HTMLAudioElement): Promise<void> {
+    if (this.muted) return;
+    try {
+      await element.play();
+      this.disarmGestureUnlock();
+    } catch {
+      this.armGestureUnlock();
+    }
+  }
+
+  private armGestureUnlock(): void {
+    if (this.gestureArmed || typeof window === 'undefined') return;
+    this.gestureArmed = true;
+    for (const event of ['pointerdown', 'keydown', 'touchstart'] as const) {
+      window.addEventListener(event, this.onUserGesture, { capture: true });
+    }
+  }
+
+  private disarmGestureUnlock(): void {
+    if (!this.gestureArmed || typeof window === 'undefined') return;
+    this.gestureArmed = false;
+    for (const event of ['pointerdown', 'keydown', 'touchstart'] as const) {
+      window.removeEventListener(event, this.onUserGesture, { capture: true });
+    }
+  }
+
+  private stopMenuMusic(): void {
+    this.disarmGestureUnlock();
+    if (!this.menuElement) return;
+    this.menuElement.pause();
+    this.menuElement.currentTime = 0;
+  }
+
+  private stopGameplayAmbience(): void {
     this.gardenSound?.stop();
     this.gardenSound?.destroy();
     this.gardenSound = null;

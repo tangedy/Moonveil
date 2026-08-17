@@ -15,12 +15,9 @@ export class LaunchScene extends Phaser.Scene {
     pauseMenuOverlay.detach();
     void dialogueOverlay.hide(true);
     audioManager.attach(this);
-    audioManager.stopAmbience();
     const savedPreferences = saveService.load()?.preferences;
     if (savedPreferences) audioManager.setMuted(savedPreferences.muted);
     void this.ensureMenuMusic();
-    this.input.once('pointerdown', () => void this.ensureMenuMusic());
-    this.input.keyboard?.once('keydown', () => void this.ensureMenuMusic());
     this.cameras.main.setBackgroundColor(PALETTE.ink);
 
     const motes = this.add.group();

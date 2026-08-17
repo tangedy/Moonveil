@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import './styles.css';
 import { GAME_HEIGHT, GAME_WIDTH, PALETTE, SceneId } from './game/config';
-import { stateStore } from './game/services';
+import { audioManager, saveService, stateStore } from './game/services';
 import { BootScene } from './scenes/BootScene';
 import { HouseBedroomScene } from './scenes/HouseBedroomScene';
 import { HouseHallwayScene } from './scenes/HouseHallwayScene';
@@ -14,6 +14,10 @@ import { LaunchScene } from './scenes/LaunchScene';
 import { PrologueScene } from './scenes/PrologueScene';
 import { SliceEndScene } from './scenes/SliceEndScene';
 import { VioletGardenScene } from './scenes/VioletGardenScene';
+
+const savedPreferences = saveService.load()?.preferences;
+if (savedPreferences) audioManager.setMuted(savedPreferences.muted);
+audioManager.startMenuMusic();
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,

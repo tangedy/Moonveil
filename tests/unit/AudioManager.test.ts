@@ -31,4 +31,32 @@ describe('AudioManager', () => {
     expect(sound.stop).toHaveBeenCalledTimes(1);
     expect(sound.destroy).toHaveBeenCalledTimes(1);
   });
+
+  it('starts menu music through HTML audio without waiting for a click', async () => {
+    const play = vi.fn(function (this: { paused: boolean }) {
+      this.paused = false;
+      return Promise.resolve();
+    });
+    class FakeAudio {
+      loop = false;
+      autoplay = false;
+      preload = '';
+      volume = 1;
+      paused = true;
+      currentTime = 0;
+      play = play;
+      pause = vi.fn();
+      setAttribute = vi.fn();
+    }
+    vi.stubGlobal('Audio', FakeAudio);
+
+    const audio = new AudioManager();
+    audio.startMenuMusic();
+
+    expect(play).toHaveBeenCalledTimes(1);
+    await Promise.resolve();
+    audio.startMenuMusic();
+    expect(play).toHaveBeenCalledTimes(1);
+    vi.unstubAllGlobals();
+  });
 });
